@@ -1,0 +1,3098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI in the Power Platform — interactive deck</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e222d; --line:#2b3040;
+    --ink:#e7e9ee; --dim:#9aa3b5; --faint:#6b7488;
+    --accent:#4da3ff; --accent2:#7c5cff;
+    --high:#e74c3c; --med:#f39c12; --low:#27ae60;
+    --ok:#2ecc71; --bad:#e05260;
+    --mono:'Cascadia Code',Consolas,'SF Mono',Menlo,monospace;
+
+    --headg1:#141824; --headg2:#0f1117;
+    --h1g:linear-gradient(90deg,#e7e9ee 20%,#8fc3ff 40%,#b3a1ff 55%,#e7e9ee 75%);
+    --code:#0b0d13; --code-ink:#c8d0e0;
+    --k:#7fb0ff; --s:#8fd694; --n2:#e0a45e; --cmt:#6b7488;
+    --chip:#232838; --chip-line:var(--line);
+    --trace-bg:#16202e; --trace-bd:#2f4d75; --trace-ink:#9fc6f5;
+    --model-g1:#20263a; --model-g2:#1a1e2b; --model-bd:#35406a;
+    --sel:#232a3d; --hover-line:#3d4557;
+    --shadow:rgba(0,0,0,.45); --shadow-soft:rgba(0,0,0,.4);
+    --tbl-line:#3a4257;
+    --note-bg:rgba(77,163,255,.07); --note-ink:#cfd7e6; --note-b:#fff;
+    --pn-bg:rgba(243,156,18,.10); --pn-bd:#f39c12; --pn-ink:#f0c987;
+    --trace-sel:#18263a; --fail-ink:#7f8798;
+    --big-bad:#ff8b7d; --big-good:#6fdc9b; --saved-ink:#8ff0b5;
+    --wire1:#4da3ff; --wire2:#5b6478;
+    --glow:rgba(77,163,255,.7);
+    --blur:none;
+
+    /* every slide size derives from these, so the deck grows with the screen it is on */
+    --fs-body:clamp(14px,.95vw,19px);
+    --fs-lead:clamp(15px,1.08vw,21px);
+    --fs-small:clamp(12.5px,.85vw,17px);
+    --fs-code:clamp(11.5px,.78vw,15.5px);
+    --fs-h4:clamp(16.5px,1.28vw,26px);
+    --fs-lbl:clamp(11px,.7vw,14.5px);
+  }
+
+  /* ---------- Aurora Glass ---------- */
+  html.aurora{
+    --bg:#f2f5fb;
+    --panel:rgba(255,255,255,.24); --panel2:rgba(255,255,255,.36);
+    --line:rgba(15,23,42,.12);
+    --rim:rgba(255,255,255,.62);
+    --ink:#0f172a; --dim:#4a5468; --faint:#7c8598;
+    --accent:#4f46e5; --accent2:#a855f7;
+    --high:#dc2626; --med:#c2740a; --low:#047857;
+    --ok:#047857; --bad:#dc2626;
+
+    --headg1:rgba(255,255,255,.48); --headg2:rgba(255,255,255,.16);
+    --h1g:linear-gradient(90deg,#0f172a 20%,#4f46e5 40%,#9333ea 55%,#0f172a 75%);
+    --code:rgba(255,255,255,.22); --code-ink:#1e293b;
+    --k:#1d4ed8; --s:#046c50; --n2:#a3560a; --cmt:#7c8598;
+    --chip:rgba(255,255,255,.40); --chip-line:rgba(255,255,255,.6);
+    --trace-bg:rgba(79,70,229,.10); --trace-bd:rgba(79,70,229,.40); --trace-ink:#3730a3;
+    --model-g1:rgba(224,231,255,.32); --model-g2:rgba(243,232,255,.20); --model-bd:rgba(255,255,255,.55);
+    --sel:rgba(79,70,229,.14); --hover-line:rgba(79,70,229,.45);
+    --shadow:rgba(30,41,59,.20); --shadow-soft:rgba(30,41,59,.14);
+    --tbl-line:rgba(15,23,42,.30);
+    --note-bg:rgba(255,255,255,.26); --note-ink:#25304a; --note-b:#0f172a;
+    --pn-bg:rgba(194,116,10,.10); --pn-bd:#c2740a; --pn-ink:#8a5308;
+    --trace-sel:rgba(79,70,229,.18); --fail-ink:#8b94a6;
+    --big-bad:#dc2626; --big-good:#047857; --saved-ink:#065f46;
+    --wire1:#4f46e5; --wire2:#8b94a6;
+    --glow:rgba(79,70,229,.55);
+    --blur:blur(34px) saturate(210%) brightness(1.10);
+  }
+
+  /* six independently morphing blobs — the colour field the glass refracts */
+  html.aurora body{background:var(--bg)}
+  .abg{display:none}
+  html.aurora .abg{
+    display:block;position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
+    filter:blur(46px) saturate(95%);
+    animation:hueroll 30s ease-in-out infinite alternate;
+  }
+  html.aurora .abg i{
+    position:absolute;display:block;top:0;left:0;
+    mix-blend-mode:multiply;opacity:.17;will-change:transform,border-radius;
+  }
+  @keyframes morph{
+    0%,100%{border-radius:48% 52% 44% 56%/54% 46% 58% 42%}
+    25%    {border-radius:64% 36% 58% 42%/38% 64% 36% 62%}
+    50%    {border-radius:34% 66% 40% 60%/62% 34% 66% 38%}
+    75%    {border-radius:56% 44% 68% 32%/44% 60% 40% 56%}
+  }
+  /* a narrow sweep only — a full rotation would swing the palette through pink */
+  @keyframes hueroll{
+    from{filter:blur(46px) saturate(95%) hue-rotate(-14deg)}
+    to  {filter:blur(46px) saturate(95%) hue-rotate(14deg)}
+  }
+  @keyframes fA{
+    0%,100%{transform:translate(-12vw,-14vh) rotate(0deg)   scale(1)}
+    25%    {transform:translate(46vw, 8vh)   rotate(90deg)  scale(1.22)}
+    50%    {transform:translate(74vw,52vh)   rotate(180deg) scale(.86)}
+    75%    {transform:translate(18vw,66vh)   rotate(270deg) scale(1.12)}
+  }
+  @keyframes fB{
+    0%,100%{transform:translate(72vw,-10vh)  rotate(0deg)   scale(1.1)}
+    25%    {transform:translate(20vw,34vh)   rotate(-100deg)scale(.88)}
+    50%    {transform:translate(-8vw,70vh)   rotate(-200deg)scale(1.25)}
+    75%    {transform:translate(52vw,42vh)   rotate(-290deg)scale(.95)}
+  }
+  @keyframes fC{
+    0%,100%{transform:translate(30vw,64vh)   rotate(0deg)   scale(.95)}
+    25%    {transform:translate(78vw,26vh)   rotate(120deg) scale(1.18)}
+    50%    {transform:translate(38vw,-12vh)  rotate(240deg) scale(1)}
+    75%    {transform:translate(-6vw,30vh)   rotate(300deg) scale(1.16)}
+  }
+  html.aurora .abg i:nth-child(1){width:46vw;height:46vw;background:radial-gradient(circle at 34% 34%,#6366f1,rgba(99,102,241,0) 70%);animation:fA 21s ease-in-out infinite,morph 13s ease-in-out infinite}
+  html.aurora .abg i:nth-child(2){width:40vw;height:40vw;background:radial-gradient(circle at 62% 38%,#a855f7,rgba(168,85,247,0) 70%);animation:fB 26s ease-in-out infinite,morph 16s ease-in-out infinite reverse}
+  html.aurora .abg i:nth-child(3){width:44vw;height:44vw;background:radial-gradient(circle at 40% 66%,#22d3ee,rgba(34,211,238,0) 70%);animation:fC 24s ease-in-out infinite,morph 11s ease-in-out infinite}
+  html.aurora .abg i:nth-child(4){width:34vw;height:34vw;background:radial-gradient(circle at 55% 45%,#a5b4fc,rgba(165,180,252,0) 70%);animation:fA 30s ease-in-out infinite reverse,morph 15s ease-in-out infinite reverse}
+  html.aurora .abg i:nth-child(5){width:38vw;height:38vw;background:radial-gradient(circle at 45% 55%,#38bdf8,rgba(56,189,248,0) 70%);animation:fB 19s ease-in-out infinite,morph 12s ease-in-out infinite}
+  html.aurora .abg i:nth-child(6){width:30vw;height:30vw;background:radial-gradient(circle at 50% 50%,#818cf8,rgba(129,140,248,0) 70%);animation:fC 33s ease-in-out infinite reverse,morph 17s ease-in-out infinite reverse}
+
+  html.aurora header,html.aurora footer{
+    -webkit-backdrop-filter:blur(34px) saturate(200%);backdrop-filter:blur(34px) saturate(200%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 34px rgba(30,41,59,.08);
+  }
+  /* the glass itself: frosted fill, bright top rim, dark contact shadow */
+  html.aurora .panel,html.aurora .card,html.aurora .themebtn,html.aurora .schip,
+  html.aurora .navbtn,html.aurora pre,html.aurora .stagerow{
+    -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+    border-color:var(--rim);position:relative;z-index:0;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.80),
+      inset 0 -1px 0 rgba(255,255,255,.28),
+      inset 0 0 26px rgba(255,255,255,.14),
+      0 10px 30px var(--shadow-soft);
+  }
+  /* specular sheen, painted under the text so it never washes out the type */
+  html.aurora .panel:before,html.aurora .card:before,html.aurora .themebtn:before,
+  html.aurora .schip:before,html.aurora .navbtn:before,html.aurora .stagerow:before{
+    content:'';position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;
+    background:linear-gradient(177deg,rgba(255,255,255,.70),rgba(255,255,255,.22) 34%,rgba(255,255,255,0) 58%);
+  }
+  html.aurora .panel{border-radius:16px}
+  html.aurora .card,html.aurora pre,html.aurora .stagerow{border-radius:13px}
+  html.aurora .card:hover,html.aurora .themebtn:hover,html.aurora .navbtn:hover{
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 20px 46px var(--shadow);
+  }
+  html.aurora .chip,html.aurora .tchip,html.aurora .pill{
+    -webkit-backdrop-filter:blur(10px) saturate(180%);backdrop-filter:blur(10px) saturate(180%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.65);
+  }
+  html.aurora .note{
+    -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+    border-radius:0 13px 13px 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+  }
+  /* translucent badges need darker ink to survive on a white card */
+  html.aurora .tchip.standard{background:rgba(37,99,235,.16);color:#1d4ed8;border-color:rgba(37,99,235,.40)}
+  html.aurora .tchip.basic{background:rgba(5,150,105,.16);color:#046c50;border-color:rgba(5,150,105,.40)}
+  html.aurora .tchip.reasoning{background:rgba(124,58,237,.16);color:#6d28d9;border-color:rgba(124,58,237,.40)}
+  html.aurora .tchip.none{background:rgba(15,23,42,.08);color:#4a5468;border-color:rgba(15,23,42,.18)}
+  html.aurora .pill.High{background:rgba(220,38,38,.14);color:#b91c1c;border-color:rgba(220,38,38,.40)}
+  html.aurora .pill.Medium{background:rgba(194,116,10,.16);color:#a3560a;border-color:rgba(194,116,10,.40)}
+  html.aurora .pill.Low{background:rgba(4,120,87,.14);color:#046c50;border-color:rgba(4,120,87,.40)}
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    line-height:1.55;
+  }
+
+  /* ---------- chrome ---------- */
+  header{
+    position:sticky;top:0;z-index:5;padding:10px clamp(16px,2.1vw,46px) 0;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,var(--headg1),var(--headg2));
+  }
+  .hrow{display:flex;align-items:center;gap:14px;justify-content:space-between}
+  .brand{font-size:var(--fs-small);font-weight:660;letter-spacing:-.1px;white-space:nowrap;
+    background:var(--h1g);background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 7s linear infinite}
+  @keyframes sheen{to{background-position:200% 0}}
+  .ctrls{display:flex;align-items:center;gap:8px}
+  .themebtn{
+    display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+    font:inherit;font-size:var(--fs-lbl);font-weight:640;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 14px;
+    transition:transform .2s,box-shadow .2s,background .2s,border-color .2s;
+  }
+  .themebtn:hover{transform:translateY(-2px);box-shadow:0 8px 22px var(--shadow);border-color:var(--accent)}
+  .themebtn .ico{font-size:1.1em;line-height:1;color:var(--accent)}
+  .themebtn[aria-pressed=true]{border-color:var(--accent)}
+
+  .snav{display:flex;gap:6px;flex-wrap:wrap;padding:9px 0 8px}
+  .schip{
+    cursor:pointer;font:inherit;font-size:var(--fs-lbl);font-weight:600;color:var(--dim);
+    background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 13px;
+    transition:color .2s,border-color .2s,transform .2s,background .2s;
+  }
+  .schip:hover{transform:translateY(-2px);color:var(--ink)}
+  .schip.on{color:var(--accent);border-color:var(--accent);background:var(--panel2)}
+  .prog{height:2px;background:var(--line);border-radius:2px;overflow:hidden}
+  .prog i{
+    display:block;height:100%;width:0;border-radius:2px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    box-shadow:0 0 12px var(--glow);
+    transition:width .42s cubic-bezier(.22,.86,.24,1);
+  }
+
+  footer{
+    position:sticky;bottom:0;z-index:5;display:flex;align-items:center;gap:14px;
+    padding:8px clamp(16px,2.1vw,46px);border-top:1px solid var(--line);
+    background:linear-gradient(0deg,var(--headg1),var(--headg2));
+  }
+  .navbtn{
+    cursor:pointer;font:inherit;font-size:var(--fs-small);font-weight:640;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 15px;
+    transition:transform .2s,box-shadow .2s,border-color .2s;
+  }
+  .navbtn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 22px var(--shadow);border-color:var(--accent)}
+  .navbtn:disabled{opacity:.35;cursor:default}
+  .pos{font-family:var(--mono);font-size:var(--fs-small);color:var(--dim)}
+  .pos b{color:var(--ink)}
+  .hint{font-size:var(--fs-lbl);color:var(--faint)}
+  /* run sheet: the wall-clock time this slide has to be finished by */
+  .clk{margin-left:auto;font-family:var(--mono);font-size:var(--fs-lbl);
+    color:var(--faint);opacity:.4;letter-spacing:.05em;white-space:nowrap}
+
+  /* ---------- slides ---------- */
+  .deck{
+    padding:clamp(14px,1.5vw,30px) clamp(16px,2.1vw,46px) 34px;
+    max-width:min(1780px,97vw);margin:0 auto;min-height:calc(100vh - 178px);
+  }
+  .slide{display:none}
+  .slide.on{display:block}
+  html:not(.vt) .slide.on{animation:slideIn .4s cubic-bezier(.22,.75,.24,1) both}
+  @keyframes slideIn{from{opacity:0;transform:translateY(14px) scale(.99)}to{opacity:1;transform:none}}
+
+  h2.st{
+    margin:0 0 5px;font-size:clamp(26px,2.35vw,46px);font-weight:680;letter-spacing:-.6px;line-height:1.12;
+    background:var(--h1g);background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 8s linear infinite;
+  }
+  .sub{margin:0 0 clamp(12px,1.2vw,22px);color:var(--dim);font-size:var(--fs-lead);max-width:min(1280px,88ch)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:clamp(13px,1.15vw,24px) clamp(15px,1.3vw,28px);margin-bottom:clamp(12px,1.05vw,20px)}
+  .panel h3{margin:0 0 8px;font-size:var(--fs-lbl);font-weight:650;letter-spacing:.4px;text-transform:uppercase;color:var(--dim)}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+    padding:clamp(11px,.95vw,20px) clamp(12px,1.05vw,22px);
+    transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s,border-color .28s,opacity .28s}
+  .card:hover{transform:translateY(-3px);box-shadow:0 16px 38px var(--shadow)}
+  .card h4{margin:0 0 7px;font-size:var(--fs-h4);font-weight:690;letter-spacing:-.3px;line-height:1.2}
+  .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(11px,1vw,20px)}
+  .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(11px,1vw,20px)}
+  @media (max-width:980px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  p{margin:0 0 10px;font-size:var(--fs-body)}
+  ul.bul{margin:0 0 10px;padding-left:1.4em;font-size:var(--fs-body)}
+  ul.bul li{margin:5px 0}
+  ol.num{margin:0;padding-left:0;list-style:none;counter-reset:n}
+  ol.num li{
+    counter-increment:n;position:relative;padding:clamp(8px,.7vw,14px) 0 clamp(8px,.7vw,14px) 2.6em;
+    font-size:var(--fs-body);border-bottom:1px solid var(--line);
+  }
+  ol.num li:last-child{border-bottom:none}
+  ol.num li:before{
+    content:counter(n);position:absolute;left:0;top:clamp(8px,.7vw,14px);
+    width:1.85em;height:1.85em;border-radius:50%;display:grid;place-items:center;
+    font-family:var(--mono);font-size:.8em;font-weight:700;color:var(--accent);
+    background:var(--chip);border:1px solid var(--chip-line);
+  }
+
+  code,pre{font-family:var(--mono);font-size:var(--fs-code)}
+  pre{
+    background:var(--code);border:1px solid var(--line);border-radius:7px;padding:12px 14px;
+    overflow:auto;margin:9px 0 0;color:var(--code-ink);max-height:52vh;line-height:1.55;
+  }
+  .k{color:var(--k)}.s{color:var(--s)}.n2{color:var(--n2)}.c{color:var(--cmt);font-style:italic}
+  b,strong{font-weight:660}
+
+  .tbl{width:100%;border-collapse:collapse;font-size:var(--fs-small);margin-top:9px}
+  .tbl th,.tbl td{padding:clamp(6px,.55vw,12px) clamp(8px,.6vw,14px);border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  .tbl th{color:var(--dim);font-weight:600;font-size:var(--fs-lbl);text-transform:uppercase;letter-spacing:.4px}
+  .tbl td.num,.tbl th.num{text-align:right;font-family:var(--mono)}
+  .tbl td.mid,.tbl th.mid{text-align:center}
+  .tbl tbody tr{transition:background .18s}
+  .tbl tbody tr:hover{background:var(--sel)}
+  .tbl tfoot td{font-weight:700;border-bottom:none;border-top:1px solid var(--tbl-line)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+  .chip{font-family:var(--mono);font-size:var(--fs-lbl);padding:3px 9px;border-radius:20px;
+    background:var(--chip);border:1px solid var(--chip-line);color:var(--dim)}
+  .tchip{display:inline-block;font-family:var(--mono);font-size:var(--fs-lbl);font-weight:700;padding:2px 8px;
+    border-radius:20px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+  .tchip.standard{background:rgba(77,163,255,.15);color:#8fc3ff;border:1px solid rgba(77,163,255,.4)}
+  .tchip.basic{background:rgba(46,204,113,.15);color:#6fdc9b;border:1px solid rgba(46,204,113,.4)}
+  .tchip.reasoning{background:rgba(124,92,255,.18);color:#b3a1ff;border:1px solid rgba(124,92,255,.45)}
+  .tchip.none{background:var(--chip);color:var(--dim);border:1px solid var(--chip-line)}
+  .pill{display:inline-block;font-size:var(--fs-lbl);font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.4px}
+  .pill.High{background:rgba(231,76,60,.16);color:#ff8b7d;border:1px solid rgba(231,76,60,.4)}
+  .pill.Medium{background:rgba(243,156,18,.16);color:#ffc46b;border:1px solid rgba(243,156,18,.4)}
+  .pill.Low{background:rgba(39,174,96,.16);color:#6fdc9b;border:1px solid rgba(39,174,96,.4)}
+
+  .note{border-left:3px solid var(--accent);background:var(--note-bg);
+    padding:clamp(9px,.85vw,17px) clamp(12px,1vw,20px);border-radius:0 7px 7px 0;
+    font-size:var(--fs-body);margin-top:12px;color:var(--note-ink)}
+  .note b{color:var(--note-b)}
+  .quote{border-left:3px solid var(--accent2);padding:8px 16px;margin:10px 0;
+    font-size:var(--fs-body);color:var(--dim);font-style:italic}
+  .quote b{color:var(--ink);font-style:normal}
+
+  /* presenter comments carried over from the markdown — hidden until toggled */
+  .pnote{display:none;border-left:3px solid var(--pn-bd);background:var(--pn-bg);
+    padding:8px 12px;border-radius:0 7px 7px 0;font-size:var(--fs-small);color:var(--pn-ink);margin:0 0 13px}
+  .pnote:before{content:'PRESENTER NOTE — ';font-family:var(--mono);font-size:.82em;letter-spacing:.5px;opacity:.8}
+  html.notes .pnote{display:block}
+
+  /* the 10-stage ladder on the Pattern 4 slide */
+  .stages{display:grid;gap:8px;margin-top:10px}
+  .stagerow{
+    display:grid;grid-template-columns:2.4em minmax(0,1fr) auto;gap:12px;align-items:center;
+    background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+    padding:clamp(8px,.7vw,15px) clamp(11px,.95vw,20px);
+    transition:transform .24s cubic-bezier(.2,.8,.2,1),border-color .24s,opacity .24s;
+  }
+  .stagerow:hover{transform:translateX(4px);border-color:var(--hover-line)}
+  .stagerow .n{font-family:var(--mono);font-size:var(--fs-lbl);color:var(--faint)}
+  .stagerow .t{font-size:var(--fs-body)}
+  .stagerow.judge{border-left:3px solid var(--accent)}
+  .stagerow.judge .t{font-weight:640}
+
+  /* title slide */
+  .hero{display:grid;place-items:center;text-align:center;min-height:min(66vh,640px)}
+  .hero h1{
+    margin:0;font-size:clamp(34px,6.4vw,86px);font-weight:700;letter-spacing:-1.8px;line-height:1.06;
+    background:var(--h1g);background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 7s linear infinite;
+  }
+  .hero .tag{margin:20px 0 0;font-size:clamp(15px,1.9vw,26px);color:var(--dim);max-width:22em;margin-inline:auto}
+  .hero .meta{margin:30px 0 0;font-size:var(--fs-small);color:var(--faint);font-family:var(--mono)}
+
+  /* ---------- click-to-focus: every grid, ladder, list and table row is pickable ---------- */
+  .pick{cursor:pointer}
+  .picks.has > .pick:not(.sel){opacity:.3;filter:saturate(.45)}
+  .card.pick.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset,0 16px 38px var(--shadow)}
+  .panel.pick.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset,0 16px 38px var(--shadow)}
+  .stagerow.pick.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;transform:translateX(6px)}
+  ol.num li.pick{transition:opacity .24s,filter .24s,background .2s;border-radius:8px}
+  ol.num li.pick.sel{background:var(--sel);box-shadow:0 0 0 1px var(--accent) inset}
+  ol.num li.pick.sel:before{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .tbl tbody tr.pick{transition:opacity .24s,filter .24s,background .2s}
+  .tbl tbody tr.pick.sel > td{background:var(--sel);box-shadow:inset 0 1px 0 var(--accent),inset 0 -1px 0 var(--accent)}
+  .tbl tbody tr.pick.sel > td:first-child{box-shadow:inset 1px 1px 0 var(--accent),inset 0 -1px 0 var(--accent)}
+  .tbl tbody tr.pick.sel > td:last-child{box-shadow:inset -1px 1px 0 var(--accent),inset 0 -1px 0 var(--accent)}
+
+  /* ---------- tone-coloured cards and panels ---------- */
+  .tn1{--tone:#4da3ff;--tone-bg:rgba(77,163,255,.10)}
+  .tn2{--tone:#b3a1ff;--tone-bg:rgba(179,161,255,.10)}
+  .tn3{--tone:#6fdc9b;--tone-bg:rgba(111,220,155,.10)}
+  .tn4{--tone:#ffc46b;--tone-bg:rgba(255,196,107,.11)}
+  html.aurora .tn1{--tone:#2563eb;--tone-bg:rgba(37,99,235,.11)}
+  html.aurora .tn2{--tone:#7c3aed;--tone-bg:rgba(124,58,237,.11)}
+  html.aurora .tn3{--tone:#047857;--tone-bg:rgba(4,120,87,.11)}
+  html.aurora .tn4{--tone:#b45309;--tone-bg:rgba(180,83,9,.11)}
+  .tn1,.tn2,.tn3,.tn4{
+    border-left:3px solid var(--tone);
+    background-image:linear-gradient(104deg,var(--tone-bg),transparent 64%);
+  }
+  .tn1>h3,.tn2>h3,.tn3>h3,.tn4>h3,.tn1>h4,.tn2>h4,.tn3>h4,.tn4>h4{color:var(--tone)}
+  .tn1>h3,.tn2>h3,.tn3>h3,.tn4>h3{font-size:var(--fs-h4);text-transform:none;letter-spacing:-.3px;font-weight:690}
+  .tn1:hover,.tn2:hover,.tn3:hover,.tn4:hover{border-color:var(--tone)}
+
+  /* scenario lists on the merged "when to use which" slide */
+  .scn{margin:0;padding:0;list-style:none}
+  .scn li{font-size:var(--fs-body);padding:7px 0 7px 1.5em;position:relative;border-bottom:1px solid var(--line)}
+  .scn li:last-child{border-bottom:none}
+  .scn li:before{content:'';position:absolute;left:0;top:1.02em;width:.6em;height:.6em;border-radius:50%;background:var(--tone)}
+
+  /* ---------- heat-mapped pricing matrix (model tiers slide) ---------- */
+  .heat{table-layout:fixed}
+  .heat td.mny{font-family:var(--mono);font-size:clamp(15px,1.2vw,25px);font-weight:680;
+    letter-spacing:-.6px;text-align:right;white-space:nowrap;transition:background .25s,color .25s}
+  .heat .h1{background:rgba(46,204,113,.22);color:#7dfab4}
+  .heat .h2{background:rgba(163,217,75,.24);color:#d8f56e}
+  .heat .h3{background:rgba(255,209,26,.26);color:#ffe066}
+  .heat .h4{background:rgba(255,138,26,.32);color:#ffb057}
+  .heat .h5{background:rgba(255,80,50,.36);color:#ff9a80}
+  .heat .h6{background:rgba(255,26,58,.48);color:#ff7070}
+  html.aurora .heat .h1{background:rgba(16,185,129,.26);color:#065f46}
+  html.aurora .heat .h2{background:rgba(132,204,22,.32);color:#3f6212}
+  html.aurora .heat .h3{background:rgba(250,204,21,.42);color:#7c4a08}
+  html.aurora .heat .h4{background:rgba(249,115,22,.36);color:#8a2f0c}
+  html.aurora .heat .h5{background:rgba(239,68,68,.34);color:#a51616}
+  html.aurora .heat .h6{background:rgba(220,38,38,.50);color:#6d1010}
+  /* a hidden column shows nothing at all — no ghost of the figure underneath */
+  .heat td.lk{background:var(--panel2);color:var(--faint);text-align:center;
+    letter-spacing:.3em;cursor:pointer;user-select:none}
+  .heat td.lk:hover{color:var(--accent);background:var(--note-bg)}
+  .heat .gh{cursor:pointer;text-align:center;color:var(--ink);font-size:var(--fs-lbl);
+    border-bottom:2px solid var(--line);transition:color .2s,border-color .2s,background .2s}
+  .heat .gh:hover{color:var(--accent);border-bottom-color:var(--accent)}
+  .heat .gh.shut{color:var(--dim)}
+  .heat .gh .rv{display:block;font-size:.86em;font-weight:600;letter-spacing:0;
+    text-transform:none;color:var(--faint)}
+  .heat .gh.shut .rv{color:var(--accent)}
+  .heatkey{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:11px;
+    font-size:var(--fs-lbl);color:var(--dim)}
+  .heatkey i{display:inline-block;width:26px;height:11px;border-radius:3px}
+
+  /* ---------- the three golden rules ---------- */
+  /* plain until a rule is opened; .lit turns on the wave and the glitter */
+  .gold{
+    position:relative;border-radius:16px;padding:2px;margin-top:14px;
+    background:var(--line);background-size:300% 100%;
+    transition:box-shadow .6s ease,background-color .6s ease;
+  }
+  .gold.lit{
+    background-image:linear-gradient(115deg,#7a5c15,#f7e08a 20%,#c9a227 34%,#fff6cf 50%,#c9a227 66%,#f7e08a 80%,#7a5c15);
+    animation:goldroll 11s linear infinite;
+    box-shadow:0 14px 48px rgba(201,162,39,.30);
+  }
+  @keyframes goldroll{to{background-position:300% 0}}
+  /* tiled sparkles over the whole block, twinkling out of phase */
+  .gold:before,.gold:after{
+    content:'';position:absolute;inset:-1px;border-radius:17px;pointer-events:none;opacity:0;z-index:2;
+  }
+  .gold:before{
+    background-image:
+      radial-gradient(circle,#fffbe8 0 1.5px,rgba(255,251,232,0) 3px),
+      radial-gradient(circle,#ffe9a8 0 1.1px,rgba(255,233,168,0) 2.4px);
+    background-size:311px 214px,247px 283px;
+    background-position:24px 31px,163px 118px;
+  }
+  .gold:after{
+    background-image:
+      radial-gradient(circle,#ffffff 0 1.2px,rgba(255,255,255,0) 2.6px),
+      radial-gradient(circle,#ffd76b 0 1.4px,rgba(255,215,107,0) 3.2px);
+    background-size:269px 297px,353px 191px;
+    background-position:97px 173px,211px 64px;
+  }
+  .gold.lit:before{animation:glint 2.7s ease-in-out infinite}
+  .gold.lit:after{animation:glint 3.9s ease-in-out .8s infinite}
+  @keyframes glint{0%,100%{opacity:.12}50%{opacity:.85}}
+  .gold .in{position:relative;z-index:1;background:var(--panel);border-radius:14px;
+    padding:clamp(13px,1.15vw,24px) clamp(15px,1.3vw,28px)}
+  html.aurora .gold .in{-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+  /* the gold block keeps the light-glass palette in both themes, so the wave shows
+     through the panel instead of hiding behind an opaque dark one */
+  .gold .in{
+    --panel:rgba(255,255,255,.24); --panel2:rgba(255,255,255,.36);
+    --line:rgba(15,23,42,.12);
+    --ink:#0f172a; --dim:#4a5468; --faint:#7c8598;
+    --accent:#4f46e5; --sel:rgba(79,70,229,.14); --hover-line:rgba(79,70,229,.45);
+    --shadow:rgba(30,41,59,.20); --blur:blur(34px) saturate(210%) brightness(1.10);
+    color:var(--ink);   /* colour inherits computed, so the subtree must re-resolve --ink */
+  }
+  .gold .in,.gold .grule{-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+  /* every stop stays dark so the moving wave never swallows the words */
+  .gold .gtitle{
+    margin:0 0 3px;font-size:clamp(19px,1.55vw,32px);font-weight:740;letter-spacing:-.4px;
+    background:linear-gradient(96deg,#7a5c15,#b8860b 34%,#8a6a10 52%,#7a5c15);
+    background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:goldroll 7s linear infinite;
+  }
+  .gold .gcap{margin:0 0 12px;font-size:var(--fs-small);color:var(--dim)}
+  .grule{--tone:var(--ink);transition:border-color .4s}
+  .grule.sel{--tone:#7a5c15}
+  .grule .gn{
+    font-family:var(--mono);font-size:clamp(21px,1.9vw,38px);font-weight:700;line-height:1;
+    color:var(--faint);transition:color .4s;
+  }
+  .grule.sel .gn{
+    background:linear-gradient(100deg,#7a5c15,#c9a227 45%,#7a5c15);
+    background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:goldroll 6s linear infinite;
+  }
+  .grule h4{color:var(--tone)}
+  .grule .more{
+    max-height:0;overflow:hidden;opacity:0;
+    transition:max-height .4s cubic-bezier(.2,.8,.2,1),opacity .3s,margin .3s;
+  }
+  .grule.sel .more{max-height:34em;opacity:1;margin-top:9px}
+  .grule .more p{margin:0;font-size:var(--fs-small);color:var(--dim)}
+  .grule .tap{font-size:var(--fs-lbl);color:var(--faint);margin-top:7px}
+  .grule.sel .tap{display:none}
+  .card.pick.grule.sel{
+    border-color:#c9a227;
+    box-shadow:0 0 0 1px #c9a227 inset,0 0 38px rgba(201,162,39,.30),0 16px 38px var(--shadow);
+  }
+
+  /* the failure modes on the trust slide, one per box instead of one long sentence */
+  .fails{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:clamp(9px,.85vw,16px)}
+  .fail{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--high);
+    border-radius:9px;padding:clamp(10px,.9vw,18px) clamp(11px,1vw,20px);
+    transition:transform .24s cubic-bezier(.2,.8,.2,1),border-color .24s}
+  .fail:hover{transform:translateY(-3px)}
+  .fail .ic{font-size:1.35em;line-height:1}
+  .fail .t{font-size:var(--fs-body);font-weight:660;margin:5px 0 2px}
+  .fail .d{font-size:var(--fs-small);color:var(--dim)}
+
+  /* pattern ladder on the architecture-evolution slide */
+  .pcost{font-family:var(--mono);font-size:clamp(24px,2.3vw,46px);font-weight:700;
+    line-height:1;color:var(--tone);letter-spacing:-1.5px}
+  .pcost span{font-size:.42em;font-weight:600;color:var(--faint);letter-spacing:0}
+
+  /* the detail panel a stage row opens on the Pattern 4 slide */
+  .sdet:empty{display:none}
+  .sdet{margin-top:clamp(12px,1.05vw,20px);animation:sdetIn .34s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes sdetIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+  .stagerow.more:after{content:'click to open';font-family:var(--mono);font-size:var(--fs-lbl);
+    color:var(--accent);opacity:.75;white-space:nowrap}
+  .stagerow.more.sel:after{content:'click to close'}
+
+  /* ---------- Meet PHI: two columns, with the finished email alongside ---------- */
+  .phicols{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);
+    gap:clamp(12px,1.2vw,26px);align-items:start}
+  @media (max-width:1080px){.phicols{grid-template-columns:1fr}}
+  .lines{margin:0;padding:0;list-style:none}
+  .lines li{font-size:clamp(15px,1.18vw,25px);line-height:1.42;padding:8px 0 8px 1.45em;
+    position:relative;border-bottom:1px solid var(--line)}
+  .lines li:last-child{border-bottom:none}
+  .lines li:before{content:'▸';position:absolute;left:0;top:8px;color:var(--accent);font-size:.85em}
+
+  /* ---------- prompt anatomy (AI Hub slide) ---------- */
+  .anat{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(11px,1vw,20px);align-items:start}
+  @media (max-width:1000px){.anat{grid-template-columns:1fr}}
+  .alist{display:grid;gap:7px}
+  .arow{
+    display:grid;grid-template-columns:auto max-content minmax(0,1fr);gap:4px 11px;align-items:baseline;cursor:pointer;
+    background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--line);
+    border-radius:9px;padding:clamp(8px,.72vw,15px) clamp(11px,.95vw,19px);
+    transition:transform .24s cubic-bezier(.2,.8,.2,1),border-color .24s,opacity .24s,background .2s;
+  }
+  .arow:hover{transform:translateX(4px);border-color:var(--hover-line)}
+  .arow .kx{font-family:var(--mono);font-size:var(--fs-lbl);color:var(--faint)}
+  .arow .nm{font-size:var(--fs-body);font-weight:620;white-space:nowrap}
+  .arow .rl{font-size:var(--fs-small);color:var(--dim)}
+  @media (max-width:1200px){.arow{grid-template-columns:auto minmax(0,1fr)}.arow .rl{grid-column:2}}
+  .alist.has .arow:not(.sel){opacity:.34;filter:saturate(.45)}
+  .arow.sel{background:var(--sel);border-color:var(--accent);border-left-color:var(--accent);
+    box-shadow:0 0 0 1px var(--accent) inset}
+  /* not sticky — pinning it pushed the long bodies (Context) off the bottom with no way to scroll to them */
+  .abody{align-self:start}
+  .abody .ttl{font-size:var(--fs-h4);font-weight:650;margin:0 0 2px}
+  .abody .cap{font-size:var(--fs-small);color:var(--dim);margin:0 0 8px}
+  .abody pre,#shellBody pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:none}
+
+  /* ---------- the empty shell (dynamic prompts slide) ---------- */
+  .shell{display:grid;gap:6px}
+  .slot{
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;cursor:pointer;
+    background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+    padding:clamp(7px,.62vw,13px) clamp(11px,.95vw,19px);
+    transition:transform .24s cubic-bezier(.2,.8,.2,1),border-color .24s,opacity .24s,background .2s;
+  }
+  .slot:hover{transform:translateX(4px);border-color:var(--hover-line)}
+  .slot .lb{font-size:var(--fs-small);color:var(--dim)}
+  .slot .vr{font-family:var(--mono);font-size:var(--fs-body);color:var(--accent);font-weight:640}
+  .shell.has .slot:not(.sel){opacity:.32;filter:saturate(.45)}
+  .slot.sel{background:var(--sel);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .shellhead,.shellfoot{font-family:var(--mono);font-size:var(--fs-lbl);color:var(--faint);letter-spacing:.4px}
+  .shellfoot{margin-top:7px}
+  .srcline{
+    font-family:var(--mono);font-size:var(--fs-small);color:var(--trace-ink);background:var(--trace-bg);
+    border:1px dashed var(--trace-bd);border-radius:7px;padding:7px 10px;margin-top:8px;word-break:break-word;
+  }
+  .srcline code{background:none;color:inherit;font-size:1em}
+
+  /* ---------- view transitions ---------- */
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){
+    animation-duration:.42s;animation-timing-function:cubic-bezier(.32,.72,0,1);
+  }
+  /* header, footer and the colour field sit out the slide travel */
+  html.vt header{view-transition-name:hdr}
+  html.vt footer{view-transition-name:ftr}
+  html.vt .abg{view-transition-name:bg}
+  /* only a deck-level move slides the page; the pipeline's own steps leave the root alone */
+  html.dk::view-transition-old(root){animation:deckOut .52s cubic-bezier(.36,.66,0,1) both}
+  html.dk::view-transition-new(root){animation:deckIn  .52s cubic-bezier(.36,.66,0,1) both}
+  html.dk.back::view-transition-old(root){animation:deckOutB .52s cubic-bezier(.36,.66,0,1) both}
+  html.dk.back::view-transition-new(root){animation:deckInB  .52s cubic-bezier(.36,.66,0,1) both}
+  @keyframes deckOut {to  {opacity:0;transform:translateX(-7%) scale(.955);filter:blur(6px)}}
+  @keyframes deckIn  {from{opacity:0;transform:translateX(7%)  scale(.955);filter:blur(6px)}}
+  @keyframes deckOutB{to  {opacity:0;transform:translateX(7%)  scale(.955);filter:blur(6px)}}
+  @keyframes deckInB {from{opacity:0;transform:translateX(-7%) scale(.955);filter:blur(6px)}}
+  /* a deck move owns the whole frame — the visualiser must not fly its own parts at the same time */
+  html.dk #pv *{view-transition-name:none !important}
+
+  /* =====================================================================
+     PHI pipeline visualiser — inlined, not framed.
+     Shared tokens, own component scale. Everything that could collide with a
+     deck class is pinned under #pv; the rest are names the deck never uses.
+     ===================================================================== */
+  #pv{margin-top:4px}
+  #pv .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,26vw);gap:18px;align-items:start;padding:16px 0 0}
+  /* below this the side column is too cramped to read, so the email drops underneath */
+  @media (max-width:1500px){#pv .wrap{grid-template-columns:minmax(0,1fr)}}
+
+  .stepper{display:flex;gap:6px;flex-wrap:wrap;position:relative;border-bottom:1px solid var(--line)}
+  .step{
+    flex:1 1 0;min-width:140px;cursor:pointer;border:1px solid var(--line);
+    border-bottom:none;border-radius:8px 8px 0 0;padding:9px 12px;
+    background:var(--panel);transition:background .2s,border-color .2s,transform .2s;position:relative;
+  }
+  .step:hover{background:var(--panel2);transform:translateY(-2px)}
+  .step.active{background:var(--panel2);border-color:var(--accent);transform:none}
+  #slider{
+    position:absolute;bottom:-1px;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    box-shadow:0 0 12px var(--glow);
+    transition:left .42s cubic-bezier(.22,.86,.24,1),width .42s cubic-bezier(.22,.86,.24,1);
+    pointer-events:none;
+  }
+  .step .n{font-size:var(--fs-lbl);color:var(--dim);letter-spacing:.5px}
+  .step .t{font-size:var(--fs-small);font-weight:600;margin-top:1px}
+  .step.active .t{color:var(--accent)}
+
+  .stage{display:none}
+  .stage.on{display:block}
+
+  @keyframes stageIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+  @keyframes riseIn{from{opacity:0;transform:translateY(18px) scale(.965)}to{opacity:1;transform:none}}
+  @keyframes popIn{0%{opacity:0;transform:scale(.4)}65%{opacity:1;transform:scale(1.25)}100%{opacity:1;transform:scale(1)}}
+  @keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* fallback choreography — only when the browser has no View Transitions */
+  html:not(.vt) .stage.on{animation:stageIn .36s cubic-bezier(.22,.75,.24,1) both}
+  html:not(.vt) .stage.on .tkstrip,
+  html:not(.vt) .stage.on .cols > *,
+  html:not(.vt) .stage.on .claim,
+  html:not(.vt) .stage.on .gen,
+  html:not(.vt) .stage.on .sugstack,
+  html:not(.vt) .stage.on .fanrow,
+  html:not(.vt) .stage.on #gate > .card,
+  html:not(.vt) .stage.on #costTop > .card,
+  html:not(.vt) .stage.on #costBot > .card,
+  html:not(.vt) .stage.on .meter,
+  html:not(.vt) .stage.on .note{animation:riseIn .46s cubic-bezier(.22,.75,.24,1) both}
+  html:not(.vt) .stage.on .claim:nth-child(2),
+  html:not(.vt) .stage.on .gen:nth-child(2),
+  html:not(.vt) .stage.on .sugstack:nth-child(2){animation-delay:.09s}
+  html:not(.vt) .stage.on .claim:nth-child(3),
+  html:not(.vt) .stage.on .gen:nth-child(3),
+  html:not(.vt) .stage.on .sugstack:nth-child(3){animation-delay:.18s}
+
+  /* content stays anchored top-left while the box resizes, so it expands rather than squashes */
+  ::view-transition-old(claim0),::view-transition-new(claim0),
+  ::view-transition-old(claim1),::view-transition-new(claim1),
+  ::view-transition-old(claim2),::view-transition-new(claim2),
+  ::view-transition-old(tkstrip),::view-transition-new(tkstrip),
+  ::view-transition-old(gen0),::view-transition-new(gen0),
+  ::view-transition-old(gen1),::view-transition-new(gen1),
+  ::view-transition-old(gen2),::view-transition-new(gen2),
+  ::view-transition-old(s00),::view-transition-new(s00),
+  ::view-transition-old(s01),::view-transition-new(s01),
+  ::view-transition-old(s02),::view-transition-new(s02),
+  ::view-transition-old(s03),::view-transition-new(s03),
+  ::view-transition-old(s10),::view-transition-new(s10),
+  ::view-transition-old(s11),::view-transition-new(s11),
+  ::view-transition-old(s12),::view-transition-new(s12),
+  ::view-transition-old(s13),::view-transition-new(s13),
+  ::view-transition-old(s20),::view-transition-new(s20),
+  ::view-transition-old(s21),::view-transition-new(s21),
+  ::view-transition-old(s22),::view-transition-new(s22),
+  ::view-transition-old(s23),::view-transition-new(s23),
+  ::view-transition-old(stitle),::view-transition-new(stitle){
+    height:100%;width:100%;object-fit:none;object-position:top left;overflow:clip;
+  }
+  html.vt .stage > .panel > h3{view-transition-name:stitle}
+  html.vt .stage.on .tkstrip{view-transition-name:tkstrip}
+  html.vt #slider{view-transition-name:slider;transition:none}
+
+  /* The two loop diagrams travel as one object each: going deeper, the old one squeezes
+     away to the right while the wider fan-out arrives from the left. */
+  html.vt #loopWrap{view-transition-name:loopviz}
+  html.vt #fanWrap{view-transition-name:fanviz}
+  ::view-transition-old(loopviz),::view-transition-old(fanviz){animation:vzOut .5s cubic-bezier(.32,.72,0,1) both}
+  ::view-transition-new(loopviz),::view-transition-new(fanviz){animation:vzIn  .5s cubic-bezier(.32,.72,0,1) both}
+  html.back::view-transition-old(loopviz),html.back::view-transition-old(fanviz){animation:vzOutB .5s cubic-bezier(.32,.72,0,1) both}
+  html.back::view-transition-new(loopviz),html.back::view-transition-new(fanviz){animation:vzInB  .5s cubic-bezier(.32,.72,0,1) both}
+  @keyframes vzOut {to  {opacity:0;transform:translateX(9%)  scale(.90)}}
+  @keyframes vzIn  {from{opacity:0;transform:translateX(-9%) scale(.94)}}
+  @keyframes vzOutB{to  {opacity:0;transform:translateX(-9%) scale(.90)}}
+  @keyframes vzInB {from{opacity:0;transform:translateX(9%)  scale(.94)}}
+
+  /* ticks stay hidden through the morph, then pop once the box has landed */
+  .stage .sug .v{opacity:0}
+  .stage.pop .sug .v{animation:popIn .3s cubic-bezier(.34,1.56,.64,1) both}
+  .stage.pop .sug:nth-child(3) .v{animation-delay:.06s}
+  .stage.pop .sug:nth-child(4) .v{animation-delay:.12s}
+  .stage.pop .sug:nth-child(5) .v{animation-delay:.18s}
+  .stage.pop .sug:nth-child(6) .v{animation-delay:.24s}
+  #wires.draw path,#fwires.draw path{stroke-dasharray:1;animation:draw .55s ease both}
+
+  #pv .card,.claim,.sugone,.gen,.meter .m,.modelbox{
+    transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s,border-color .28s;
+    will-change:transform;
+  }
+  .sugone:hover,.meter .m:hover,.modelbox:hover{transform:translateY(-3px);box-shadow:0 16px 38px var(--shadow)}
+  .claim:hover{transform:translateY(-3px) scale(1.008);box-shadow:0 16px 38px var(--shadow)}
+  .claim.sel:hover{transform:none}
+
+  /* --- component scale: the visualiser is dense on purpose, so it keeps its own sizes --- */
+  #pv .panel{padding:14px 16px;margin-bottom:14px}
+  #pv .panel h3{margin:0 0 4px;font-size:13px;letter-spacing:.3px}
+  #pv .panel .lead{margin:0 0 10px;font-size:13px;color:var(--dim)}
+  #pv .card{padding:12px 13px}
+  #pv .card h4{margin:0 0 6px;font-size:13px;font-weight:640}
+  #pv .card .meta{font-size:11px;color:var(--dim);font-family:var(--mono)}
+  #pv code,#pv pre{font-size:11.5px}
+  #pv pre{padding:10px 12px;margin:8px 0 0;max-height:320px;line-height:1.5}
+  #pv .chips{margin-top:8px;gap:5px}
+  #pv .chip{font-size:10.5px;padding:2px 7px}
+  #pv .chip.tr{background:var(--trace-bg);border-color:var(--trace-bd);color:var(--trace-ink)}
+  #pv .tchip{font-size:10px;padding:2px 7px}
+  #pv .pill{font-size:10.5px;padding:2px 8px}
+  #pv .note{padding:9px 12px;font-size:12.5px;margin-top:12px}
+  #pv .tbl{font-size:12px;margin-top:8px}
+  #pv .tbl th,#pv .tbl td{padding:6px 8px;text-align:right}
+  #pv .tbl th:first-child,#pv .tbl td:first-child,
+  #pv .tbl th:nth-child(2),#pv .tbl td:nth-child(2){text-align:left}
+  #pv .tbl th{font-size:10.5px}
+  #pv .tbl .num{font-family:var(--mono)}
+  #pv .tbl tfoot td{font-weight:700;border-bottom:none;border-top:1px solid var(--tbl-line);color:var(--ink)}
+
+  .cols{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:start}
+  @media (max-width:860px){.cols{grid-template-columns:1fr}}
+  .modelbox{
+    background:linear-gradient(160deg,var(--model-g1),var(--model-g2));border:1px solid var(--model-bd);
+    border-radius:10px;padding:14px;text-align:center;min-width:190px;
+  }
+  .modelbox .icon{font-size:20px}
+  .modelbox .name{font-weight:660;font-size:14px;margin-top:4px}
+  .modelbox .tier{font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:2px}
+
+  .tchip.mini{background:rgba(46,204,113,.15);color:#6fdc9b;border:1px solid rgba(46,204,113,.4)}
+  .tkstrip{
+    display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--dim);
+    font-family:var(--mono);background:var(--code);border:1px solid var(--line);border-radius:8px;
+    padding:8px 12px;margin-bottom:12px;
+  }
+  .tkstrip b{color:var(--ink);font-weight:700}
+
+  #loopWrap{position:relative}
+  #wires{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:0}
+  .loopgrid{display:grid;grid-template-columns:1fr 150px 1fr;gap:16px;position:relative;z-index:1}
+  @media (max-width:860px){.loopgrid{grid-template-columns:1fr}#wires{display:none}}
+
+  .claim{
+    background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--line);
+    border-radius:9px;padding:11px 13px;margin-bottom:12px;cursor:pointer;
+  }
+  .claim:hover{border-color:var(--hover-line)}
+  .claim.High{border-left-color:var(--high)}
+  .claim.Medium{border-left-color:var(--med)}
+  .claim.Low{border-left-color:var(--low)}
+  .claim.sel{background:var(--sel);box-shadow:0 0 0 1px var(--accent) inset,0 6px 22px var(--shadow-soft)}
+  .claim.dim{opacity:.32;filter:saturate(.4)}
+  .claim .hl{font-weight:640;font-size:13.5px;margin-bottom:5px}
+  .claim .trace,.fanclaim .trace{
+    font-family:var(--mono);font-size:10.5px;color:var(--trace-ink);background:var(--trace-bg);
+    border:1px dashed var(--trace-bd);border-radius:6px;padding:5px 7px;margin-top:6px;word-break:break-word;
+  }
+  .claim.sel .trace{border-style:solid;border-color:var(--accent);background:var(--trace-sel)}
+
+  .gen{
+    background:linear-gradient(160deg,var(--model-g1),var(--model-g2));border:1px solid var(--model-bd);
+    border-radius:9px;padding:10px;margin-bottom:12px;text-align:center;
+  }
+  .gen.dim{opacity:.3}
+  .gen.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .gen .nm{font-size:11.5px;font-weight:640}
+  .gen .cog{display:inline-block;animation:spin 5s linear infinite}
+  .gen.sel .cog{animation-duration:1.1s}
+  .gen .tk{font-family:var(--mono);font-size:10px;color:var(--ok);margin-top:3px}
+
+  .sugstack{display:grid;gap:8px;margin-bottom:12px;transition:.18s}
+  .sugstack.dim{opacity:.32}
+  .sugone{
+    background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+    padding:9px 11px;font-size:12.5px;line-height:1.35;
+  }
+  .sugstack.sel .sugone{box-shadow:0 0 0 1px var(--accent) inset;background:var(--sel)}
+  .sug{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;margin:5px 0}
+  .sug .v{flex:0 0 auto;font-size:11px;font-weight:700}
+  .sug.pass .v{color:var(--ok)}
+  .sug.fail .v{color:var(--bad)}
+  .sug.fail .tx{color:var(--fail-ink);text-decoration:line-through}
+  .sug .why,.fansug .why{display:block;font-size:10.5px;color:var(--dim);font-style:italic;text-decoration:none}
+
+  .meter{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  .meter.three{grid-template-columns:1fr 1fr 1fr}
+  @media (max-width:700px){.meter,.meter.three{grid-template-columns:1fr}}
+  .meter .m{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .meter .m.saved{
+    background:linear-gradient(160deg,rgba(46,204,113,.14),rgba(77,163,255,.10));
+    border-color:rgba(46,204,113,.45);
+  }
+  .meter .m.saved .big{color:var(--saved-ink);font-size:26px}
+  .meter .big{font-size:22px;font-weight:700;font-family:var(--mono)}
+  .meter .lbl{font-size:11px;color:var(--dim)}
+  .bar{height:7px;border-radius:4px;background:var(--chip);margin-top:7px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;border-radius:4px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+  .bad i{background:linear-gradient(90deg,var(--bad),var(--med))}
+  .good i{background:linear-gradient(90deg,var(--ok),var(--accent))}
+
+  .mailwrap{position:sticky;top:132px}
+  .mailhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .mailhead .t{font-size:12px;font-weight:650;text-transform:uppercase;letter-spacing:.4px;color:var(--dim)}
+  .mailhead .st{font-size:11px;font-family:var(--mono);color:var(--accent)}
+  .mail{
+    background:#fff;color:#2c3e50;border-radius:10px;overflow:hidden;
+    font-size:13px;line-height:1.5;box-shadow:0 10px 40px var(--shadow);
+  }
+  @media (max-width:1500px){.mailwrap{position:static;max-width:900px;margin:10px auto 0}}
+  .mail .mh{background:#dbeafe;color:#1e3a8a;padding:14px 18px}
+  .mail .mh h2{margin:0;font-size:16px;font-weight:650}
+  .mail .mh p{margin:3px 0 0;font-size:12px}
+  .mail .mb{padding:14px 18px}
+  .mail h3.sec{color:#34495e;font-size:13px;margin:0 0 8px;border-bottom:2px solid #ecf0f1;padding-bottom:5px}
+  .mail section{margin-bottom:16px}
+  .mail .ins{padding:11px 13px;border-radius:6px;margin-bottom:9px;border-left:4px solid #ccc}
+  .mail .ins.High{background:#fff5f5;border-left-color:#e74c3c}
+  .mail .ins.Medium{background:#fffbf0;border-left-color:#f39c12}
+  .mail .ins.Low{background:#f0fff4;border-left-color:#27ae60}
+  .mail .ins .h{font-weight:700;margin:0 0 4px}
+  .mail .ins .cat{font-size:12px;color:#666;margin:0 0 6px}
+  .mail .ins ul{margin:0 0 6px;padding-left:19px;font-size:13px}
+  .mail .ins li{margin:2px 0}
+  .mail .ins .tr{font-size:11px;color:#888;font-style:italic;margin:0}
+  .mail .empty{
+    border:2px dashed #c9ced6;border-radius:6px;padding:9px;margin:0 0 6px;
+    color:#9aa3b0;font-size:12px;font-style:italic;text-align:center;background:#fafbfc;
+  }
+  .mail .empty b{color:#e08a2e;font-style:normal}
+  .mail .none{color:#666;font-style:italic;margin:0}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--dim);margin-top:10px}
+  .legend i{display:inline-block;width:22px;height:2px;vertical-align:middle;margin-right:5px}
+
+  #fanWrap{position:relative}
+  #fwires{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:0}
+  #fanRows{position:relative;z-index:1}
+  .fanrow{
+    display:grid;grid-template-columns:minmax(0,1fr) 112px minmax(0,1.05fr) 108px 74px;
+    gap:12px;align-items:center;margin-bottom:14px;
+  }
+  @media (max-width:1100px){.fanrow{grid-template-columns:1fr;gap:8px}#fwires{display:none}}
+  /* equal auto-rows keep suggestion, judge and verdict on the same baseline for the wires */
+  .fansugs,.fanjudges,.fanverds{display:grid;grid-auto-rows:1fr;gap:8px}
+  .fanclaim{
+    background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--line);
+    border-radius:9px;padding:10px 12px;
+  }
+  .fanclaim.High{border-left-color:var(--high)}
+  .fanclaim.Medium{border-left-color:var(--med)}
+  .fanclaim.Low{border-left-color:var(--low)}
+  .fanclaim .ix{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.4px}
+  .fanclaim .hl{font-size:12.5px;font-weight:640;margin:3px 0 6px}
+  .fangen{
+    background:linear-gradient(160deg,var(--model-g1),var(--model-g2));border:1px solid var(--model-bd);
+    border-radius:9px;padding:9px 7px;text-align:center;
+  }
+  .fangen .cog{display:inline-block;font-size:15px;animation:spin 5s linear infinite}
+  .fangen .nm{font-size:10.5px;font-weight:640;margin-top:2px}
+  .fansug{
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+    padding:7px 9px;font-size:11px;line-height:1.35;
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .fansug .why{margin-top:3px}
+  .fanjudge{
+    background:linear-gradient(160deg,var(--model-g1),var(--model-g2));border:1px solid var(--model-bd);
+    border-radius:8px;padding:6px;text-align:center;
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .fanjudge .nm{font-size:10px;font-weight:640}
+  .fanjudge .tk{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:2px}
+  .fanv{
+    display:flex;align-items:center;justify-content:center;opacity:0;
+    font-family:var(--mono);font-size:11.5px;font-weight:700;
+    border:1px solid var(--line);border-radius:8px;
+  }
+  .fanv.pass{color:var(--ok);background:rgba(46,204,113,.12);border-color:rgba(46,204,113,.45)}
+  .fanv.fail{color:var(--bad);background:rgba(224,82,96,.12);border-color:rgba(224,82,96,.45)}
+  .stage.pop .fanv{animation:popIn .3s cubic-bezier(.34,1.56,.64,1) both}
+  .stage.pop .fanverds .fanv:nth-child(2){animation-delay:.07s}
+  .stage.pop .fanverds .fanv:nth-child(3){animation-delay:.14s}
+  .stage.pop .fanverds .fanv:nth-child(4){animation-delay:.21s}
+
+  .knobwrap{margin:14px 0;padding:10px 13px}
+  .knobs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+  @media (max-width:900px){.knobs{grid-template-columns:1fr;gap:10px}}
+  .knob .top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px}
+  .knob .lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+  .knob .val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .knob input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;cursor:pointer;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));outline:none;display:block;
+  }
+  .knob input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;
+    border:2px solid var(--accent);box-shadow:0 2px 8px var(--shadow);transition:transform .15s;
+  }
+  .knob input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
+  .knob input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;background:#fff;
+    border:2px solid var(--accent);box-shadow:0 2px 8px var(--shadow);
+  }
+
+  /* --- aurora glass for the surfaces the deck's own list does not cover --- */
+  html.aurora .step,html.aurora .tkstrip,html.aurora .meter .m,html.aurora .claim,
+  html.aurora .sugone,html.aurora .gen,html.aurora .fanclaim,html.aurora .fangen,
+  html.aurora .fansug,html.aurora .fanjudge,html.aurora .modelbox{
+    -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+    border-color:var(--rim);position:relative;z-index:0;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.80),
+      inset 0 -1px 0 rgba(255,255,255,.28),
+      inset 0 0 26px rgba(255,255,255,.14),
+      0 10px 30px var(--shadow-soft);
+  }
+  html.aurora .step:before,html.aurora .meter .m:before,html.aurora .claim:before,
+  html.aurora .sugone:before,html.aurora .fanclaim:before,html.aurora .fansug:before,
+  html.aurora .fanjudge:before,html.aurora .fangen:before,html.aurora .gen:before,
+  html.aurora .modelbox:before{
+    content:'';position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;
+    background:linear-gradient(177deg,rgba(255,255,255,.70),rgba(255,255,255,.22) 34%,rgba(255,255,255,0) 58%);
+  }
+  html.aurora .claim,html.aurora .sugone,html.aurora .modelbox,
+  html.aurora .gen,html.aurora .meter .m,html.aurora .tkstrip{border-radius:13px}
+  html.aurora .fanclaim,html.aurora .fangen,html.aurora .fansug,html.aurora .fanjudge{border-radius:11px}
+  html.aurora .step.active{border-color:var(--accent)}
+  html.aurora .sugone:hover,html.aurora .meter .m:hover,
+  html.aurora .modelbox:hover,html.aurora .claim:hover{
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 20px 46px var(--shadow);
+  }
+  html.aurora .claim.sel,html.aurora .sugstack.sel .sugone{
+    box-shadow:inset 0 0 0 1px var(--accent),inset 0 1px 0 rgba(255,255,255,.9),0 14px 36px var(--shadow);
+  }
+  html.aurora .claim .trace,html.aurora .fanclaim .trace,html.aurora .bar,html.aurora .legend{
+    -webkit-backdrop-filter:blur(10px) saturate(180%);backdrop-filter:blur(10px) saturate(180%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.65);
+  }
+  html.aurora .legend{border-radius:10px;padding:7px 10px;background:rgba(255,255,255,.14)}
+  html.aurora .mail{
+    border:1px solid rgba(255,255,255,.7);
+    box-shadow:0 0 0 12px rgba(255,255,255,.28), 0 24px 60px rgba(30,41,59,.26);
+  }
+  html.aurora .tchip.mini{background:rgba(5,150,105,.16);color:#046c50;border-color:rgba(5,150,105,.40)}
+  html.aurora .meter .m.saved{
+    background:linear-gradient(160deg,rgba(4,120,87,.18),rgba(79,70,229,.12));
+    border-color:rgba(255,255,255,.72);
+  }
+  html.aurora .fanv.pass{background:rgba(4,120,87,.14);border-color:rgba(4,120,87,.45)}
+  html.aurora .fanv.fail{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.45)}
+
+  /* ---------- feedback QR ---------- */
+  /* drawn as a module grid rather than an image, so the deck stays one portable file */
+  .qrfull{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:clamp(14px,1.7vw,32px);min-height:min(70vh,700px);text-align:center}
+  .qrfull h2.st{margin:0}
+  .qrfull svg{display:block;width:min(52vh,52vw,460px);height:auto;border-radius:14px;
+    box-shadow:0 22px 60px var(--shadow)}
+
+  /* ---------- easter eggs ---------- */
+  /* Fixed to the viewport and living outside #deck: always on screen whatever the scroll,
+     never tagged as a pick, never able to swallow a click. */
+  #eggs{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+  #eggs .egg{position:absolute}
+  #eggs svg{display:block;overflow:visible}
+
+  /* --- slide 1: a cat pads along the bottom edge, left to right --- */
+  #eggs .e-cat{left:0;bottom:112px;color:#bd8b4d;animation:catWalk 5s linear both}
+  html.aurora #eggs .e-cat{color:#8a6234}
+  @keyframes catWalk{from{transform:translateX(-16vw)}to{transform:translateX(107vw)}}
+  .e-cat .bod{animation:catBob .44s ease-in-out infinite}
+  @keyframes catBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+  .e-cat .lg{animation:catStep .44s ease-in-out infinite}
+  @keyframes catStep{0%,100%{transform:rotate(25deg)}50%{transform:rotate(-25deg)}}
+  .e-cat .l1{transform-origin:44px 58px}
+  .e-cat .l2{transform-origin:58px 58px;animation-direction:reverse;opacity:.45}
+  .e-cat .l3{transform-origin:86px 58px;animation-direction:reverse;opacity:.45}
+  .e-cat .l4{transform-origin:98px 58px}
+  .e-cat .tail{transform-origin:26px 46px;animation:catTail 1.15s ease-in-out infinite}
+  @keyframes catTail{0%,100%{transform:rotate(-11deg)}50%{transform:rotate(13deg)}}
+  .e-cat .head{transform-origin:100px 42px;animation:catLook 5s ease-in-out both}
+  @keyframes catLook{0%,30%{transform:rotate(0)}42%,58%{transform:rotate(-15deg)}70%,100%{transform:rotate(0)}}
+  .e-cat .eye{transform-origin:116px 34px;animation:catBlink 5s linear both}
+  @keyframes catBlink{0%,23%,26%,71%,74%,100%{transform:scaleY(1)}24.5%,72.5%{transform:scaleY(.08)}}
+
+  /* --- slide 6: a saucer drops in from the top right, beams, and leaves --- */
+  #eggs .e-ufo{right:0;bottom:0;color:#9fb0c8;animation:ufoFly 2s cubic-bezier(.3,.8,.3,1) both}
+  html.aurora #eggs .e-ufo{color:#647a99}
+  /* enters off the top right but hovers down in the clear strip, so the beam is never clipped */
+  @keyframes ufoFly{
+    0%{transform:translate(14vw,-112vh)}
+    24%,72%{transform:translate(-15vw,-92px)}
+    100%{transform:translate(16vw,-116vh)}
+  }
+  .e-ufo .sau{animation:ufoBob 1.1s ease-in-out infinite}
+  @keyframes ufoBob{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-5px) rotate(1.6deg)}}
+  .e-ufo .beam{animation:ufoBeam 2s ease both}
+  @keyframes ufoBeam{0%,22%{opacity:0}32%{opacity:.95}40%{opacity:.35}48%,66%{opacity:.95}76%,100%{opacity:0}}
+  .e-ufo .lt{animation:ufoLite .9s linear infinite}
+  @keyframes ufoLite{0%,100%{opacity:.22}50%{opacity:1}}
+  .e-ufo .k2{animation-delay:.18s}
+  .e-ufo .k3{animation-delay:.36s}
+  .e-ufo .k4{animation-delay:.54s}
+  .e-ufo .k5{animation-delay:.72s}
+  .e-ufo .al{animation:ufoAl 2s ease both}
+  @keyframes ufoAl{0%,28%{opacity:0;transform:translateY(13px)}40%,62%{opacity:1;transform:translateY(-2px)}74%,100%{opacity:0;transform:translateY(13px)}}
+
+  /* --- slide 9: a robot peeks over the bottom-right edge, looks both ways, ducks --- */
+  #eggs .e-rob{right:7vw;bottom:46px;color:#8e9bb2;animation:robPeek 2s cubic-bezier(.3,.8,.3,1) both}
+  html.aurora #eggs .e-rob{color:#5f6f8a}
+  @keyframes robPeek{0%{transform:translateY(102%)}18%,82%{transform:translateY(24%)}100%{transform:translateY(102%)}}
+  .e-rob .hd{transform-origin:60px 94px;animation:robLook 2s ease-in-out both}
+  @keyframes robLook{0%,22%{transform:rotate(0)}38%{transform:rotate(-14deg)}58%{transform:rotate(14deg)}74%,100%{transform:rotate(0)}}
+  .e-rob .pu{animation:robEye 2s ease-in-out both}
+  @keyframes robEye{0%,22%{transform:translateX(0)}38%{transform:translateX(-4px)}58%{transform:translateX(4px)}74%,100%{transform:translateX(0)}}
+  .e-rob .ant{transform-origin:60px 9px;animation:robAnt .62s ease-in-out infinite}
+  @keyframes robAnt{0%,100%{transform:scale(.8);opacity:.5}50%{transform:scale(1.25);opacity:1}}
+
+  /* --- slide 12: a caterpillar crawls in and leaves as a butterfly --- */
+  #eggs .e-evo{left:0;top:66%;color:#9a8f7a;animation:evoCrawl 3.5s cubic-bezier(.35,0,.5,1) both}
+  html.aurora #eggs .e-evo{color:#6b6252}
+  @keyframes evoCrawl{0%{transform:translateX(-14vw)}52%,100%{transform:translateX(21vw)}}
+  .e-evo .cpl{animation:evoFade 3.5s linear both}
+  @keyframes evoFade{0%,50%{opacity:1}60%,100%{opacity:0}}
+  .e-evo .sg{fill:currentColor;transform-box:fill-box;transform-origin:50% 100%;
+    animation:evoInch .62s ease-in-out infinite}
+  @keyframes evoInch{0%,100%{transform:translateY(0) scale(1)}45%{transform:translateY(-5px) scale(1.1,.92)}}
+  .e-evo .s2{animation-delay:-.09s}
+  .e-evo .s3{animation-delay:-.18s}
+  .e-evo .s4{animation-delay:-.27s}
+  .e-evo .s5{animation-delay:-.36s}
+  .e-evo .s6{animation-delay:-.45s}
+  .e-evo .bfl{animation:evoFly 3.5s ease-in both}
+  @keyframes evoFly{
+    0%,50%{opacity:0;transform:translate(0,0) scale(.45)}
+    62%{opacity:1;transform:translate(2px,-10px) scale(1)}
+    100%{opacity:0;transform:translate(13vw,-70px) scale(.9)}
+  }
+  .e-evo .wg{transform-origin:45px 30px;animation:evoFlap .2s ease-in-out infinite}
+  @keyframes evoFlap{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.42)}}
+
+  /* --- slide 14: the ghost of demos past floats up from the bottom --- */
+  #eggs .e-gho{left:50%;bottom:90px;margin-left:-50px;color:#cfdaec;animation:ghoRise 2s ease-out both}
+  html.aurora #eggs .e-gho{color:#8fa3bd}
+  @keyframes ghoRise{
+    0%{opacity:0;transform:translateY(48px) scale(.85)}
+    22%{opacity:.94;transform:translateY(4px) scale(1)}
+    68%{opacity:.94;transform:translateY(-62px) scale(1)}
+    100%{opacity:0;transform:translateY(-108px) scale(1.05)}
+  }
+  .e-gho .gh2{transform-origin:50px 90px;animation:ghoSway 1.4s ease-in-out infinite}
+  @keyframes ghoSway{0%,100%{transform:rotate(-4.5deg)}50%{transform:rotate(4.5deg)}}
+  .e-gho .hm{transform-box:fill-box;transform-origin:50% 50%;animation:ghoHem .72s ease-in-out infinite}
+  @keyframes ghoHem{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+  .e-gho .h2x{animation-delay:.24s}
+  .e-gho .h3x{animation-delay:.48s}
+  .e-gho .bub{animation:ghoBub 2s ease both}
+  @keyframes ghoBub{0%,30%{opacity:0}42%,72%{opacity:1}86%,100%{opacity:0}}
+  .e-gho .bub rect,.e-gho .bub path{fill:var(--panel2);stroke:currentColor;stroke-width:1.5}
+  .e-gho .bub text{font-family:var(--mono);font-size:12px;fill:var(--dim);stroke:none}
+
+  /* --- slide 4: ten seconds after the AI Builder column opens, follow the money --- */
+  #eggs .e-msft{right:clamp(14px,2.2vw,46px);width:212px;height:200px;
+    animation:msIn .55s cubic-bezier(.2,.9,.3,1.4) both,msOut .9s ease-in 9.1s both}
+  @keyframes msIn{from{opacity:0;transform:translateY(-18px) scale(.8)}to{opacity:1;transform:none}}
+  @keyframes msOut{to{opacity:0;transform:translateY(-14px) scale(.94)}}
+  .e-msft .logo{position:absolute;right:10px;top:0;animation:msHover 3.1s ease-in-out infinite;
+    filter:drop-shadow(0 14px 20px rgba(0,0,0,.45))}
+  @keyframes msHover{0%,100%{transform:translateY(0) rotate(-2.5deg)}50%{transform:translateY(-11px) rotate(2.5deg)}}
+  .e-msft .tick{position:absolute;right:8px;top:76px;display:flex;align-items:center;gap:5px;
+    font-family:var(--mono);font-size:13px;font-weight:700;color:#3fd67f;
+    background:rgba(63,214,127,.14);border:1px solid rgba(63,214,127,.45);border-radius:8px;
+    padding:3px 9px;animation:msTick 1.15s ease-in-out infinite}
+  @keyframes msTick{0%,100%{opacity:.7}50%{opacity:1}}
+  .e-msft .tick i{width:9px;height:9px;background:#3fd67f;clip-path:polygon(50% 0,100% 100%,0 100%)}
+  .e-msft .chart{position:absolute;right:0;top:104px}
+  .e-msft .chart path{fill:none;stroke:#3fd67f;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:400;stroke-dashoffset:400;filter:drop-shadow(0 0 7px rgba(63,214,127,.6));
+    animation:msDraw 2.6s cubic-bezier(.3,.8,.3,1) .35s both}
+  @keyframes msDraw{to{stroke-dashoffset:0}}
+  .e-msft .p{position:absolute;bottom:4px;left:var(--x);font-family:var(--mono);font-weight:700;
+    font-size:calc(15px * var(--z));line-height:1;color:#ffd45e;
+    animation:msRise var(--t) linear var(--d) infinite}
+  .e-msft .p.ar{width:calc(13px * var(--z));height:calc(13px * var(--z));background:#3fd67f;
+    clip-path:polygon(50% 0,100% 100%,0 100%)}
+  @keyframes msRise{
+    0%{opacity:0;transform:translateY(26px) scale(.65)}
+    16%,72%{opacity:1}
+    100%{opacity:0;transform:translateY(-176px) scale(1.1)}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    #eggs{display:none !important}
+    .slide.on,.slide.on *{animation:none !important}
+    #wires.draw path,#fwires.draw path{animation:none !important}
+    ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none !important}
+    .stage .sug .v,.stage .fanv{opacity:1 !important}
+    html.aurora .abg,html.aurora .abg i{animation:none !important}
+  }
+</style>
+</head>
+<body>
+
+<div class="abg" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div id="eggs" aria-hidden="true"></div>
+
+<header>
+  <div class="hrow">
+    <div class="brand">AI in the Power Platform — Making Your Flows Actually Intelligent</div>
+    <div class="ctrls">
+      <button id="themeBtn" class="themebtn" type="button" aria-pressed="false">
+        <span class="ico">◐</span><span class="lbl">Aurora</span>
+      </button>
+    </div>
+  </div>
+  <nav class="snav" id="snav"></nav>
+  <div class="prog"><i id="progbar"></i></div>
+</header>
+
+<main class="deck" id="deck">
+
+  <!-- ============ 0 — Title ============ -->
+  <section class="slide" data-sec="Intro" data-src="Slide 1">
+    <div class="hero">
+      <div>
+        <h1>AI in the<br>Power Platform</h1>
+        <p class="tag">Making your flows actually intelligent — with AI Builder &amp; Copilot Studio.</p>
+        <p class="meta">features · trust · architecture</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 1 — AI Hub & Custom Prompts ============ -->
+  <section class="slide" data-sec="Prompts" data-src="Slide 3">
+    <h2 class="st">The AI Hub &amp; Custom Prompts</h2>
+    <p class="sub">Open Power Automate → <b>AI Hub</b>. Two families.</p>
+    <div class="pnote">for this slide i will swith to power automate so this one can be basic</div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4>Pre-built models</h4>
+        <p style="margin:0">Document processing, OCR, sentiment, entity extraction — ready to go.</p>
+      </div>
+      <div class="card">
+        <h4>Custom Prompts ⭐</h4>
+        <p style="margin:0">Call an LLM (GPT) directly as a flow action — feed it data, get <b>structured JSON</b> back.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      One action does many jobs — generate, judge, detect conflicts — you just change what you feed it.
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <h3>Anatomy of a well-structured prompt</h3>
+      <p style="margin:0 0 11px;color:var(--dim);font-size:var(--fs-small)">
+        Eight parts, eight jobs. Click one to read it on its own.
+      </p>
+      <div class="anat">
+        <div class="alist" id="anatList"></div>
+        <div class="abody card" id="anatBody"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2 — Dynamic Prompts ============ -->
+  <section class="slide" data-sec="Prompts" data-src="Slide 4">
+    <h2 class="st">The Power Move: Dynamic Prompts <span style="color:var(--dim);font-weight:500">("Empty Shell")</span></h2>
+    <p class="sub">Most people hardcode a prompt in AI Builder. Instead, make the action a <b>dumb pipe</b>.</p>
+    <div class="pnote">for this slide i will swith to power automate so this one can be basic</div>
+
+    <div class="anat">
+      <div class="panel" style="margin:0">
+        <h3>AI Builder custom prompt — the empty shell</h3>
+        <p style="margin:0 0 10px;color:var(--dim);font-size:var(--fs-small)">
+          No hardcoded text — it's <b>all variables</b>. Click a slot to see where it's pulled from
+          and what you put in it.
+        </p>
+        <div class="shellhead">┌ prompt ─────────────────────────────────</div>
+        <div class="shell" id="shell"></div>
+        <div class="shellfoot">└─────────────────────────────────────────</div>
+      </div>
+
+      <div>
+        <div class="card" id="shellBody"></div>
+        <div class="card" style="margin-top:12px">
+          <h4>Why it matters</h4>
+          <ul class="bul" style="margin-bottom:0">
+            <li>🔀 Conditional prompts without duplicating actions</li>
+            <li>📝 Update prompts in SharePoint — not inside the flow</li>
+            <li>🧪 A/B test by swapping a file</li>
+            <li>🔄 One action serves an entire pipeline</li>
+          </ul>
+        </div>
+        <div class="note">
+          Assemble every component <b>in the flow at runtime</b> from SharePoint / Dataverse.
+          Each block lives in its own file or list; the flow stitches them together.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3 — Model Tiers & Cost ============ -->
+  <section class="slide" data-sec="Prompts" data-src="Slide 5">
+    <h2 class="st">Model Tiers &amp; Cost 💸</h2>
+    <p class="sub">Start with the cheapest model that works. <i>Don't hire a brain surgeon to apply a Band-Aid.</i></p>
+
+    <div class="panel">
+      <h3>Which tier for what</h3>
+      <table class="tbl">
+        <thead><tr><th>Tier</th><th>Best for</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tchip basic">Basic</span> <span style="color:var(--dim)">cheapest</span></td>
+              <td>Format, extract, single-item checks</td>
+              <td>Suggestion generation, ranking, formatting</td></tr>
+          <tr><td><span class="tchip standard">Standard</span></td>
+              <td>Multi-source analysis, judgement, conflict detection</td>
+              <td>Claim generation &amp; validation, quality gate</td></tr>
+          <tr><td><span class="tchip reasoning">Premium</span></td>
+              <td>The hardest reasoning — use sparingly</td>
+              <td>Rarely needed once the task is decomposed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h3>Pricing — USD per 1 million tokens</h3>
+      <p style="margin:0;color:var(--dim);font-size:var(--fs-small)">
+        Hotter cell = more expensive. Azure OpenAI is shown; <b>click a platform heading</b> to reveal
+        what the same model costs there.
+      </p>
+      <div id="priceTbl"></div>
+      <div class="heatkey">
+        <span>cheap</span>
+        <i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i><i class="h5"></i><i class="h6"></i>
+        <span>eye-watering</span>
+      </div>
+    </div>
+
+    <div class="note">
+      The whole point of decomposing the task (covered later) is to do the job with
+      <b>basic/standard</b> models instead of premium. <b>Spend tokens only where they earn their keep.</b>
+    </div>
+  </section>
+
+  <!-- ============ 4 — Copilot Studio: What It Is ============ -->
+  <section class="slide" data-sec="Copilot Studio" data-src="Slide 6">
+    <h2 class="st">Copilot Studio: What It Actually Is</h2>
+    <p class="sub"><b>A conversational AI agent builder.</b> It orchestrates tools, data and prompts through natural language.</p>
+
+    <div class="grid2">
+      <div class="card tn1">
+        <h4>AI Builder = the worker</h4>
+        <p style="margin:0">Does a specific task, when told to.</p>
+      </div>
+      <div class="card tn2">
+        <h4>Copilot Studio = the manager</h4>
+        <p style="margin:0">Decides <i>what</i> to do, in <i>what order</i>, based on the conversation.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <h3>Capabilities</h3>
+      <table class="tbl">
+        <thead><tr><th>Capability</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td><b>Topic-based routing</b></td><td>Route conversations to specific logic based on user intent</td></tr>
+          <tr><td><b>Action calling</b></td><td>Call Power Automate flows, HTTP endpoints, Dataverse operations</td></tr>
+          <tr><td><b>Multi-turn conversations</b></td><td>Maintain context across conversation turns</td></tr>
+          <tr><td><b>Adaptive cards</b></td><td>Rich interactive responses — buttons, forms, tables</td></tr>
+          <tr><td><b>Channel deployment</b></td><td>Deploy to Teams, web, Slack and more</td></tr>
+          <tr><td><b>Knowledge sources</b></td><td>Ground responses in uploaded documents, websites, SharePoint</td></tr>
+          <tr><td><b>Guardrails</b></td><td>Control what the agent should and shouldn't do</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 5 — Copilot Studio: Best Practices ============ -->
+  <section class="slide" data-sec="Copilot Studio" data-src="Slide 7">
+    <h2 class="st">Copilot Studio: Best Practices</h2>
+    <p class="sub">Seven things that decide whether an agent is usable or merely impressive.</p>
+
+    <div class="panel">
+      <ol class="num">
+        <li><b>Design topics around user intents</b> — ask <i>"what is the user trying to accomplish?"</i>, not <i>"what can my system do?"</i>. Map common questions and tasks to specific topics; avoid catch-all topics that try to do everything.</li>
+        <li><b>Each action returns structured JSON</b> — Copilot variables pass data between steps. Structured output = predictable behaviour. Unstructured output = unpredictable agent responses.</li>
+        <li><b>Keep actions focused</b> — one action = one job. Small and composable beats monolithic.</li>
+        <li><b>Use fallbacks</b> — graceful failure beats confused silence. Offer alternatives.</li>
+        <li><b>Test with real users early</b> — your "obvious" UX isn't obvious to anyone else. Watch someone use it without guidance and you'll learn fast; iterate on phrasing, topic triggers and response formatting.</li>
+        <li><b>Log conversation turns to Dataverse</b> — track what users <i>ask</i> (reveals gaps in your topics) and what the agent gets <i>wrong</i> (reveals prompt issues). Build analytics on usage patterns.</li>
+        <li><b>Set guardrails</b> — what should the agent refuse to do? What data should it never expose? What should trigger escalation to a human?</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 6 — Copilot Studio: Agent Patterns ============ -->
+  <section class="slide" data-sec="Copilot Studio" data-src="Slide 8">
+    <h2 class="st">Copilot Studio: Agent Patterns</h2>
+    <p class="sub">Three shapes that cover most agents worth building.</p>
+
+    <div class="grid2">
+      <div class="panel tn1" style="margin:0">
+        <h3>Pattern 1 — Generate → Evaluate → Display</h3>
+        <table class="tbl">
+          <thead><tr><th class="num">#</th><th>Action</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td>User asks question</td><td>Natural language input</td></tr>
+            <tr><td class="num">2</td><td>Call Generator flow</td><td>PA flow with AI Builder, returns draft</td></tr>
+            <tr><td class="num">3</td><td>Call Evaluator flow</td><td>Separate flow validates draft against source</td></tr>
+            <tr><td class="num">4</td><td>Check verdict</td><td>PASS → display · FAIL → retry (max 2)</td></tr>
+            <tr><td class="num">5</td><td>Display result</td><td>Adaptive card with result and source link</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel tn2" style="margin:0">
+        <h3>Pattern 2 — Multi-Step Agent</h3>
+        <table class="tbl">
+          <thead><tr><th class="num">#</th><th>Action</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Copilot parses intent</td><td>Understands what the user wants</td></tr>
+            <tr><td class="num">2</td><td>Get data</td><td>PA flow retrieves relevant data from source</td></tr>
+            <tr><td class="num">3</td><td>Analyse</td><td>AI Builder action analyses the data</td></tr>
+            <tr><td class="num">4</td><td>Validate</td><td>Separate AI Builder action validates the analysis</td></tr>
+            <tr><td class="num">5</td><td>Display</td><td>Adaptive card with validated result and links</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel tn3" style="margin-top:13px">
+      <h3>Pattern 3 — Tool Orchestration</h3>
+      <p style="margin:0;color:var(--dim);font-size:var(--fs-small)">The agent decides which tools to use based on the conversation.</p>
+      <table class="tbl">
+        <thead><tr><th>Tool type</th><th>Purpose</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><b>Retrieval</b></td><td>Fetch relevant data before generation</td><td>Query Dataverse for site performance data</td></tr>
+          <tr><td><b>Generation</b></td><td>Create analysis/content from data</td><td>AI Builder prompt to generate insights</td></tr>
+          <tr><td><b>Validation</b></td><td>Verify generated content</td><td>Separate evaluator checks accuracy</td></tr>
+          <tr><td><b>Logging</b></td><td>Record conversation and decisions</td><td>Write to Dataverse for audit trail</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <b>Notice Pattern 1</b> — it's the same <b>generate → evaluate</b> discipline we build in Power Automate
+      later. The agent is just a different front door onto the same validated flow.
+    </div>
+  </section>
+
+  <!-- ============ 7 — When To Use Which (decision matrix + rules of thumb, merged) ============ -->
+  <section class="slide" data-sec="Copilot Studio" data-src="Slides 9 + 11">
+    <h2 class="st">When To Use Which</h2>
+    <p class="sub">Pick by the shape of the <b>trigger</b>, not by which product is newer. Click a column to focus it.</p>
+
+    <div class="grid3">
+      <div class="panel tn1" style="margin:0">
+        <h3>AI Builder in Power Automate</h3>
+        <p style="margin:0 0 4px;color:var(--dim);font-size:var(--fs-small)">No user in the loop, and you want control of every step.</p>
+        <ul class="scn">
+          <li>No user interaction needed</li>
+          <li>Triggered by a schedule or an event</li>
+          <li>Automated batch processing</li>
+          <li>Document analysis pipeline</li>
+          <li>Automated email / report generation</li>
+          <li>Simple text classification</li>
+          <li>You need fine control over every step</li>
+          <li>You're prototyping — fastest to set up</li>
+        </ul>
+      </div>
+
+      <div class="panel tn2" style="margin:0">
+        <h3>Copilot Studio</h3>
+        <p style="margin:0 0 4px;color:var(--dim);font-size:var(--fs-small)">A person is on the other end, talking.</p>
+        <ul class="scn">
+          <li>The user needs to have a conversation</li>
+          <li>Triggered by user conversation</li>
+          <li>User-facing Q&amp;A</li>
+          <li>Helpdesk / IT support bot</li>
+          <li>Conversational data entry</li>
+          <li>You need the <i>agent</i> to decide what to do — tool orchestration</li>
+        </ul>
+      </div>
+
+      <div class="panel tn3" style="margin:0">
+        <h3>Both together</h3>
+        <p style="margin:0 0 4px;color:var(--dim);font-size:var(--fs-small)">Copilot Studio out front, calling your flows behind it.</p>
+        <ul class="scn">
+          <li>A user triggers a complex background process</li>
+          <li>Multi-step workflow that needs user input partway</li>
+          <li>Interactive data explorer</li>
+          <li>You're building a production assistant</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>The short version:</b> <i>No user? Power Automate. A conversation? Copilot Studio.
+      Complex assistant? Copilot Studio calling your flows.</i>
+    </div>
+  </section>
+
+  <!-- ============ 8 — PA vs Copilot Studio ============ -->
+  <section class="slide" data-sec="Copilot Studio" data-src="Slide 10">
+    <h2 class="st">Power Automate vs Copilot Studio <span style="color:var(--dim);font-weight:500">(and Agent Flows)</span></h2>
+    <p class="sub">Which platform?</p>
+
+    <div class="panel">
+      <ul class="bul" style="margin-bottom:0">
+        <li>Copilot Studio <i>can</i> trigger tasks — but <b>ongoing, repeated tasks should be built in Power Automate</b>.</li>
+        <li>Copilot Studio's main purpose is <b>user-facing interactivity and chat</b>.</li>
+        <li><b>They call each other</b> — Copilot Studio can call Power Automate flows, and vice versa.</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h3>Agent Flows — Copilot Studio's own equivalent of Power Automate flows</h3>
+      <table class="tbl">
+        <tbody>
+          <tr><td style="width:150px"><b>Feature set</b></td><td>The same as Power Automate flows, but integrated into Copilot Studio</td></tr>
+          <tr><td><b>Licensing</b></td><td>Usage-based — no separate Power Automate licence required</td></tr>
+          <tr><td><b>Advantages</b></td><td>All logic stays on one platform; slightly quicker trigger time</td></tr>
+          <tr><td><b>Migration</b></td><td>Power Automate → Agent Flow is a simple conversion; <b>not reversible</b>, because the billing model differs</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 9 — Can You Trust Your AI? ============ -->
+  <section class="slide" data-sec="Trust" data-src="Slide 12">
+    <h2 class="st">Can You Trust Your AI?</h2>
+    <p class="sub">Honest answer: <b>UMAD BRO?</b></p>
+
+    <div class="panel">
+      <h3>What actually goes wrong</h3>
+      <div class="fails">
+        <div class="fail">
+          <div class="ic">🫧</div>
+          <div class="t">It hallucinates</div>
+          <div class="d">Plausible-but-fake data, stated with total confidence.</div>
+        </div>
+        <div class="fail">
+          <div class="ic">✂️</div>
+          <div class="t">It truncates silently</div>
+          <div class="d">You asked for ten. You got four. Nobody said anything.</div>
+        </div>
+        <div class="fail">
+          <div class="ic">🧩</div>
+          <div class="t">It emits malformed JSON</div>
+          <div class="d">A stray comma and your whole flow falls over.</div>
+        </div>
+        <div class="fail">
+          <div class="ic">🔢</div>
+          <div class="t">It cites numbers that don't exist</div>
+          <div class="d">The citation looks perfect. The value was never in the data.</div>
+        </div>
+        <div class="fail">
+          <div class="ic">🎲</div>
+          <div class="t">It isn't repeatable</div>
+          <div class="d">Same prompt, same data, different answer tomorrow.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>The mindset shift</h3>
+      <p>From <i>"Is this correct?"</i> → <b>"Can I prove it was backed by data?"</b>
+      The goal isn't perfect AI — it's <i>provably validated</i> AI.</p>
+      <div class="grid3">
+        <div class="card tn1"><h4>Evaluation</h4><p style="margin:0">"Good enough to ship?"</p></div>
+        <div class="card tn2"><h4>Observability</h4><p style="margin:0">"What broke, where?"</p></div>
+        <div class="card tn3"><h4>Explainability</h4><p style="margin:0">"Why this output?"</p></div>
+      </div>
+    </div>
+
+    <div class="gold">
+      <div class="in">
+        <p class="gtitle">The three golden rules</p>
+        <p class="gcap">Everything else in this talk is an implementation detail of these. Click one to open it.</p>
+        <div class="grid3">
+          <div class="card grule">
+            <div class="gn">01</div>
+            <h4>Separate generation from evaluation</h4>
+            <p style="margin:0;font-size:var(--fs-small)">Never let the fox guard the henhouse.</p>
+            <div class="more">
+              <p>Generators optimise for <b>fluency</b>; evaluators for <b>accuracy</b>. The same model
+              asked to grade its own work will defend it. Use a separate call, and don't hand the
+              evaluator the generator's reasoning — it will just agree with it.</p>
+            </div>
+            <div class="tap">click to open</div>
+          </div>
+
+          <div class="card grule">
+            <div class="gn">02</div>
+            <h4>Do it deterministically, or gate it cheaply</h4>
+            <p style="margin:0;font-size:var(--fs-small)">If code can decide it, code should decide it.</p>
+            <div class="more">
+              <p>Calculations, lookups, filtering and if/then rules belong in the flow — free, exact,
+              identical every run. And put the free checks first: a <b>$0</b> length and schema check
+              before a <b>$0.02</b> LLM judge. Most bad output never needs to reach a model at all.</p>
+            </div>
+            <div class="tap">click to open</div>
+          </div>
+
+          <div class="card grule">
+            <div class="gn">03</div>
+            <h4>Ask for the reasoning <i>and</i> the data</h4>
+            <p style="margin:0;font-size:var(--fs-small)">Chain-of-thought <i>is</i> your audit trail.</p>
+            <div class="more">
+              <p>Make the "why" — <b>and the source figures it leaned on</b> — fields in the JSON; in
+              AI Builder you simply <i>prompt</i> for them. That turns a rubber-stamped <code>true</code>
+              into a checkable one. And it isn't only a trust device: showing the reasoning and citing
+              the data <b>measurably lifted our accuracy</b>.</p>
+            </div>
+            <div class="tap">click to open</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 11 — Meet PHI ============ -->
+  <section class="slide" data-sec="PHI" data-src="Slide 13">
+    <h2 class="st">Meet PHI — Personal Health Insights</h2>
+    <p class="sub"><i>Your watch already knows you need a shower. Now we build the thing brave enough to tell you.</i></p>
+
+    <div class="phicols">
+      <div>
+        <div class="panel">
+          <h3>What PHI is</h3>
+          <ul class="lines">
+            <li>Your phone and watch quietly collect <b>thousands</b> of signals.</li>
+            <li>Sleep, steps, heart rate, resting heart rate, blood pressure, activity.</li>
+            <li>Plus your calendar — what you've actually got on today.</li>
+            <li><b>The job:</b> every morning, email you the few insights that matter <i>today</i>.</li>
+            <li>Not a dashboard. <b>A verdict</b>, with the data it stands on.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>The hero moment</h3>
+          <div class="quote">
+            Calendar says: <b>date tomorrow, 7pm.</b><br>
+            PHI cross-references: last shower 2 days ago (yes, the watch knows), 4 hrs sleep, stress signals climbing.<br>
+            Email verdict: <b>"You've got a date at 7pm and haven't showered in 2 days. Freshen up — and get an early night."</b>
+          </div>
+        </div>
+
+        <div class="note">
+          <b>Each insight has the same shape:</b> a <b>headline</b>, then <b>suggestions</b>, then a
+          <b>traceability line</b> — the subset of data it's based on. A silly example, but <i>structurally</i>
+          identical to serious production AI systems.
+        </div>
+      </div>
+
+      <div class="panel" style="margin:0">
+        <h3>What actually lands in your inbox</h3>
+        <div class="mail">
+          <div class="mh"><h2>Personal Health Insights</h2><p>2026-07-24</p></div>
+          <div class="mb">
+            <section>
+              <h3 class="sec">High</h3>
+              <div class="ins High">
+                <p class="h">Shower before tonight's event</p>
+                <p class="cat">hygiene</p>
+                <ul>
+                  <li>Shower this morning, not tonight — you'll be rushing at 6.</li>
+                  <li>Lay your clothes out now while you've got ten spare minutes.</li>
+                </ul>
+                <p class="tr">Based on: evening_social_event=1, hours_since_shower=51</p>
+              </div>
+              <div class="ins High">
+                <p class="h">You're running on 4 hrs — protect the afternoon</p>
+                <p class="cat">sleep</p>
+                <ul>
+                  <li>Move the 2pm review if you can; it's your lowest point today.</li>
+                  <li>Lights out by 22:30 — you've a 7am start tomorrow.</li>
+                </ul>
+                <p class="tr">Based on: sleep_duration=4.2, restless_minutes=63, meetings_after_1300=2</p>
+              </div>
+            </section>
+            <section>
+              <h3 class="sec">Medium</h3>
+              <div class="ins Medium">
+                <p class="h">Easy day on the legs</p>
+                <p class="cat">recovery</p>
+                <ul>
+                  <li>Walk, don't run — resting HR is still up from Sunday.</li>
+                </ul>
+                <p class="tr">Based on: resting_hr=61 (+7 vs baseline), training_load_3d=high</p>
+              </div>
+            </section>
+            <section>
+              <h3 class="sec">Low</h3>
+              <div class="ins Low">
+                <p class="none">Nothing at this level today.</p>
+              </div>
+            </section>
+          </div>
+        </div>
+        <p style="margin:11px 0 0;color:var(--dim);font-size:var(--fs-small)">
+          Everything after this slide exists to make <i>that</i> email trustworthy.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 12 — Patterns 1–3 ============ -->
+  <section class="slide" data-sec="PHI" data-src="Slide 14">
+    <h2 class="st">Architecture Evolution: Patterns 1–3</h2>
+    <p class="sub"><b>Start simple. Escalate on evidence, not anxiety.</b> Each pattern is a rung up the ladder.</p>
+
+    <div class="grid3">
+      <div class="card tn3">
+        <div class="pcost">2× <span>cost</span></div>
+        <h4>1. Generate → Evaluate</h4>
+        <p style="margin:0">Generate insights, one judge checks them, ship or discard.</p>
+        <p style="margin:9px 0 0;color:var(--dim);font-size:var(--fs-small)">
+          <b>Your baseline.</b> If this holds, you're done.</p>
+      </div>
+
+      <div class="card tn4">
+        <div class="pcost">2–5× <span>cost</span></div>
+        <h4>2. Iterative refinement</h4>
+        <p style="margin:0">The judge fails it, so you retry <i>with the reason attached</i>.</p>
+        <p style="margin:9px 0 0;color:var(--dim);font-size:var(--fs-small)">
+          <i>"Claim says marathon but steps=412"</i> → corrected to <i>"sedentary today"</i>.</p>
+      </div>
+
+      <div class="card tn2">
+        <div class="pcost">3–4× <span>cost</span></div>
+        <h4>3. Multi-candidate + arbiter</h4>
+        <p style="margin:0">Generate three drafts in parallel, an arbiter picks the best-cited one.</p>
+        <p style="margin:9px 0 0;color:var(--dim);font-size:var(--fs-small)">
+          Buys you consistency — it cuts variance, not error.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      Most systems live happily on Pattern 1 or 2 — until the logs prove you need more.
+      Then comes <b>Pattern 4</b>, the production shape.
+    </div>
+  </section>
+
+  <!-- ============ 13 — Pattern 4 ============ -->
+  <section class="slide" data-sec="PHI" data-src="Slide 15">
+    <h2 class="st">Pattern 4: Task Decomposition + Layered Validation</h2>
+    <p class="sub">Break the big job into small, independently-validated stages. Drop failures early.</p>
+
+    <div class="panel">
+      <h3>The premise</h3>
+      <p style="margin:0">Our first version was <b>one big reasoning-model prompt</b> doing everything. It was too
+      <b>slow</b> for time-sensitive insights, too <b>expensive</b>, and not <b>accurate</b> enough for production —
+      too many failure points in a single prompt. So we broke the job apart: <b>deterministic calculations</b> out of
+      the LLM, <b>less context</b> per step, and <b>simpler (standard/basic) models</b> per stage — which
+      <i>increased</i> accuracy.</p>
+    </div>
+
+    <div class="panel">
+      <h3>The 10 stages (PHI)</h3>
+      <div class="stages">
+        <div class="stagerow more" data-d="derived"><span class="n">01</span><span class="t">Derived metrics</span><span class="tchip none">no LLM</span></div>
+        <div class="stagerow"><span class="n">02</span><span class="t">Claim generation</span><span class="tchip standard">standard</span></div>
+        <div class="stagerow judge"><span class="n">03</span><span class="t">Claim validation — Judge L1</span><span class="tchip standard">standard</span></div>
+        <div class="stagerow"><span class="n">04</span><span class="t">Suggestion generation</span><span class="tchip basic">basic</span></div>
+        <div class="stagerow judge"><span class="n">05</span><span class="t">Per-suggestion validation — Judge L2</span><span class="tchip basic">basic</span></div>
+        <div class="stagerow"><span class="n">06</span><span class="t">Reassembly</span><span class="tchip none">no LLM</span></div>
+        <div class="stagerow judge"><span class="n">07</span><span class="t">Quality gate — conflict detection</span><span class="tchip standard">standard</span></div>
+        <div class="stagerow"><span class="n">08</span><span class="t">Ranking</span><span class="tchip basic">basic</span></div>
+        <div class="stagerow"><span class="n">09</span><span class="t">HTML formatting</span><span class="tchip basic">basic</span></div>
+        <div class="stagerow judge"><span class="n">10</span><span class="t">Format validation &amp; sanity check</span><span class="tchip standard">standard</span></div>
+      </div>
+    </div>
+
+    <div class="sdet" id="sdet"></div>
+  </section>
+
+  <!-- ============ 14 — LIVE DEMO ============ -->
+  <section class="slide" data-sec="Demo" data-src="Slide 24">
+    <h2 class="st">LIVE DEMO 🎬</h2>
+    <p class="sub"><b>Goal:</b> build/run enough of PHI to see the machine think — and land the joke.</p>
+
+    <div class="panel">
+      <h3>What we'll show live</h3>
+      <ol class="num">
+        <li>Mock health data (a Compose / SharePoint item — fictional numbers).</li>
+        <li>External prompt pulled from SharePoint into the "empty shell" Custom Prompt.</li>
+        <li><b>Claim generation</b> → watch it emit claims + traceability.</li>
+        <li><b>Claim validation L1</b> → reject the planted <i>"marathon"</i> claim (steps=412).</li>
+        <li><b>Quality gate</b> → catch the <i>"hot shower" vs "water-saving goal"</i> conflict live.</li>
+        <li><b>Send the email</b> → the 7pm-date verdict lands in the inbox.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ 16 — The pipeline visualiser, inlined ============ -->
+  <section class="slide" data-sec="Demo" data-src="Slides 18–23">
+    <h2 class="st">The Pipeline — what each model actually sees, and what it costs</h2>
+    <p class="sub">
+      Only the two calls that need the whole dataset get it. Everything downstream is handed
+      <b>a pre-validated subset</b>, which means it can run on a mini model. Six steps, three tiers,
+      no reasoning model anywhere. <b>← →</b> walks the steps; click a claim in step 3 to follow one loop.
+    </p>
+    <div class="pnote">Slide 18 - 23 will be replaced by the pipeline html, but i will show that after the live demo — so the order is updated, but the slide numbers are not</div>
+
+    <div id="pv">
+      <div class="stepper" id="stepper"><div id="slider"></div></div>
+
+      <div class="wrap">
+        <div>
+          <!-- ================= STAGE 1 ================= -->
+          <div class="stage" data-s="0">
+            <div class="panel">
+              <h3>Step 1 — Claim generation</h3>
+              <p class="lead">One call. Everything the system knows, plus the assembled prompt.</p>
+              <div class="tkstrip" data-p="0"></div>
+              <div class="cols">
+                <div>
+                  <div class="card">
+                    <h4>Prompt components <span class="meta">(SharePoint / Dataverse)</span></h4>
+                    <div class="chips">
+                      <span class="chip">system_prompt.txt</span><span class="chip">context.txt</span>
+                      <span class="chip">task.txt — 9-step protocol</span><span class="chip">PHI_Rules.txt</span>
+                      <span class="chip">examples.txt</span><span class="chip">output_schema.txt</span>
+                    </div>
+                    <div class="meta" style="margin-top:9px">~1,900 tokens</div>
+                  </div>
+                  <div class="card" style="margin-top:12px">
+                    <h4>Full dataset</h4>
+                    <div class="chips">
+                      <span class="chip">88 raw metrics</span><span class="chip">metric_policy</span>
+                      <span class="chip">data_quality</span><span class="chip">calendar_events</span>
+                      <span class="chip">9 derived metrics</span>
+                    </div>
+                    <div class="meta" style="margin-top:9px">~3,400 tokens</div>
+                  </div>
+                </div>
+                <div class="modelbox">
+                  <div class="icon">📋</div>
+                  <div class="name">Claim Generator</div>
+                  <div class="tier">standard tier</div>
+                  <div class="meta" style="margin-top:8px;color:var(--dim)">1 call</div>
+                </div>
+                <div>
+                  <div class="card">
+                    <h4>Output contract</h4>
+                    <pre><span class="c">// three fields. no suggestions.</span>
+[{ <span class="k">"headline"</span>: string,
+   <span class="k">"severity"</span>: <span class="s">"High|Medium|Low"</span>,
+   <span class="k">"traceability"</span>: string }]</pre>
+                    <div class="note" style="margin-top:10px">
+                      The generator <b>never</b> writes suggestions. It only says what is true and which
+                      metrics prove it. Narrowing the job to three fields is what lets a
+                      <b>standard model</b> do it — no reasoning tier required.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= STAGE 2 ================= -->
+          <div class="stage" data-s="1">
+            <div class="panel">
+              <h3>Step 2 — Claim validation (Judge L1)</h3>
+              <p class="lead">
+                A second standard-tier call re-derives the protocol from the same dataset and rules on each
+                claim independently. It must show its working — rank 1, rank 2, the band and the count — so a
+                rubber-stamped <code>true</code> is visible as one.
+              </p>
+              <div class="tkstrip" data-p="1"></div>
+              <div id="claimsPlain"></div>
+              <div class="note">
+                <b>Once L1 passes, the traceability line becomes a trusted subset.</b> Every
+                <code>metric=value</code> pair in it has been confirmed against the source. That is what makes it
+                safe to send downstream <i>instead of</i> the dataset — and why everything after this point fits
+                on a mini model.
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= STAGE 3 ================= -->
+          <div class="stage" data-s="2">
+            <div class="panel">
+              <h3>Step 3 — Suggestion generation loop</h3>
+              <p class="lead">
+                One mini-model call per claim, fed only that claim's traceability line. Click a claim to
+                isolate its iteration.
+              </p>
+              <div class="tkstrip" data-p="2"></div>
+              <div id="loopWrap">
+                <svg id="wires"></svg>
+                <div class="loopgrid">
+                  <div id="claimCol"></div>
+                  <div id="genCol"></div>
+                  <div id="sugCol"></div>
+                </div>
+              </div>
+              <div class="legend">
+                <span><i style="background:var(--accent)"></i>traceability → generator input</span>
+                <span><i style="background:var(--wire2)"></i>generator → suggestions</span>
+              </div>
+              <div id="payload"></div>
+            </div>
+          </div>
+
+          <!-- ================= STAGE 4 — the loop inside the loop ================= -->
+          <div class="stage" data-s="3">
+            <div class="panel">
+              <h3>Step 4 — Suggestion validation</h3>
+              <p class="lead">
+                A second loop, nested inside the first. The box of four suggestions splits apart and every
+                one of them gets its own mini-model call, on its own, with nothing but that claim's
+                traceability line for company. Three claims × four suggestions = <b>12 independent
+                judgements</b>, each returning a bare true or false with its reason.
+              </p>
+              <div class="tkstrip" data-p="3"></div>
+              <div id="fanWrap">
+                <svg id="fwires"></svg>
+                <div id="fanRows"></div>
+              </div>
+              <div class="legend">
+                <span><i style="background:var(--accent)"></i>traceability → model input</span>
+                <span><i style="background:var(--wire2)"></i>generated suggestion</span>
+                <span><i style="background:var(--ok)"></i>verdict</span>
+              </div>
+              <div class="note">
+                No box here can see any other box. Each judge is handed one sentence and the subset that is
+                supposed to justify it — which is what keeps the payload near 240 tokens and the tier on
+                mini, and is also the blind spot the quality gate exists to cover.
+              </div>
+              <div class="note">
+                The six survivors go straight to the email on the right. Reassembly is an <b>array filter</b>,
+                not a prompt — nothing is re-generated, so nothing can drift between validation and send.
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= STAGE 5 ================= -->
+          <div class="stage" data-s="4">
+            <div class="panel">
+              <h3>Step 5 — Quality gate</h3>
+              <p class="lead">
+                Every prior call judged one thing in isolation. This is the only call that sees the
+                <b>assembled set</b> — so it is the only one that can catch a problem that exists only between
+                insights. Standard tier, one call, and the payload is the finished insights, not the dataset.
+              </p>
+              <div class="tkstrip" data-p="4"></div>
+              <div id="gate"></div>
+              <div class="note">
+                <b>Isolation is what made the mini models viable, and this is the price of it.</b> A judge that
+                only ever sees one suggestion cannot know that two claims booked the same evening. The gate
+                buys that back for one standard-tier call on ~1,300 tokens.
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= STAGE 6 ================= -->
+          <div class="stage" data-s="5">
+            <div class="panel">
+              <h3>Step 6 — Tokens and dollars</h3>
+              <p class="lead">
+                Same job, both ways. One reasoning model doing generate-then-evaluate on the full dataset,
+                versus the PHI pipeline routing each step to the cheapest tier that can do it.
+              </p>
+              <div id="costTop"></div>
+              <div class="card knobwrap">
+                <div class="knobs">
+                  <div class="knob">
+                    <div class="top"><span class="lbl">Insights / day</span><span class="val" id="vN">40</span></div>
+                    <input type="range" id="sN" min="1" max="100" step="1" value="40">
+                  </div>
+                  <div class="knob">
+                    <div class="top"><span class="lbl">Tokens / report</span><span class="val" id="vT">17,700</span></div>
+                    <input type="range" id="sT" min="0" max="1000" step="1" value="416">
+                  </div>
+                  <div class="knob">
+                    <div class="top"><span class="lbl">Input / output</span><span class="val" id="vP">65.5% / 34.5%</span></div>
+                    <input type="range" id="sP" min="1" max="99" step="0.0001" value="65.5367">
+                  </div>
+                </div>
+              </div>
+              <div id="costBot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= EMAIL PREVIEW ================= -->
+        <div class="mailwrap">
+          <div class="mailhead">
+            <span class="t">Email output</span>
+            <span class="st" id="mailState">not started</span>
+          </div>
+          <div class="mail" id="mail"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 17 — More Patterns ============ -->
+  <section class="slide" data-sec="Wrap" data-src="Slide 16">
+    <h2 class="st">More Patterns to Explore</h2>
+    <p class="sub">Our four are the backbone — but the field is bigger. Once you're comfortable, explore:</p>
+
+    <div class="panel">
+      <table class="tbl">
+        <thead><tr><th>Pattern</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><b>Reflection / self-critique</b></td><td>Model critiques and revises its own draft before a judge sees it</td></tr>
+          <tr><td><b>Ensemble / voting</b></td><td>Run it N times (or use N evaluators) and take the majority</td></tr>
+          <tr><td><b>Cascading models</b></td><td>Cheap model first; escalate to premium only if needed</td></tr>
+          <tr><td><b>Hierarchical</b></td><td>Quick filter → detailed evaluation → expert review</td></tr>
+          <tr><td><b>Router / dispatch</b></td><td>A cheap classifier routes each input to the right specialised prompt</td></tr>
+          <tr><td><b>RAG (retrieval-augmented)</b></td><td>Fetch relevant reference docs and ground the prompt on them</td></tr>
+          <tr><td><b>Agentic loop</b></td><td>Agent iterates with tool calls until the task is complete</td></tr>
+          <tr><td><b>Multi-agent debate</b></td><td>Multiple agents argue; an arbiter synthesises the answer</td></tr>
+          <tr><td><b>Plan-then-execute</b></td><td>Agent drafts a plan, validates it, then executes</td></tr>
+          <tr><td><b>A/B testing</b></td><td>Run patterns in parallel and measure outcomes</td></tr>
+          <tr><td><b>Human-in-the-loop</b></td><td>Route low-confidence items to a person for approval</td></tr>
+          <tr><td><b>Tool-calling agent</b></td><td>The model decides which flows/APIs to call (→ Copilot Studio)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <b>The rule still holds:</b> don't adopt one because it's clever — adopt it when your logs show a problem it solves.
+    </div>
+  </section>
+
+  <!-- ============ 18 — Best Practices & Takeaways ============ -->
+  <section class="slide" data-sec="Wrap" data-src="Slide 25">
+    <h2 class="st">Best Practices &amp; Takeaways</h2>
+    <p class="sub"><i>Now you've seen it built — here's how to keep it reliable.</i></p>
+
+    <div class="panel">
+      <ol class="num">
+        <li><b>Always JSON contracts</b> — never trust free text; parse + schema-validate every output.</li>
+        <li><b>Validate, don't trust</b> — check length, schema, types, and that cited values exist in the source.</li>
+        <li><b>Separate generation from evaluation</b> — never let a generator grade its own work, and keep validators independent (don't feed them the generator's reasoning).</li>
+        <li><b>Keep deterministic work out of the LLM</b> — calculations, lookups and filtering belong in the flow: free, exact, and identical every run.</li>
+        <li><b>Ask for the reasoning and the data</b> — having the model output its chain-of-thought and cite the source figures it used <i>measurably</i> lifted our accuracy, as well as making the answer auditable.</li>
+        <li><b>Right-size the model</b> — start with the cheapest tier that works; decompose the task so basic/standard models can do the job instead of premium.</li>
+        <li><b>Fail fast, and gate every step</b> — bad output early? Stop. Each validator is also a gate: below threshold → halt and retry, don't ship it.</li>
+        <li><b>Externalise prompts where it helps</b> — SharePoint/Dataverse, versioned; easier to edit and A/B test than prompts buried in a flow.</li>
+        <li><b>Build retry mechanisms with feedback</b> — on failure, tell the model exactly what it got wrong; cap at 2–3.</li>
+        <li><b>Use only the data you need</b> — don't dump the whole dataset into the model. Send the relevant slice to cut cost and lift accuracy — though sometimes the full set is right. Find the balance.</li>
+        <li><b>Start simple, evolve on evidence</b> — don't over-engineer; add complexity only when your logs prove you need it.</li>
+        <li><b>Log what matters — to Dataverse</b> — durable, queryable run history; you can't improve what you can't measure.</li>
+      </ol>
+    </div>
+
+    <div class="note">
+      <b>And the big one:</b> no user? <b>Power Automate</b>. A conversation? <b>Copilot Studio</b>.
+      (Complex assistant? Copilot Studio calling your flows.)
+    </div>
+  </section>
+
+  <section class="slide" data-sec="Wrap" data-src="Feedback">
+    <div class="qrfull">
+      <h2 class="st">Please scan for feedback</h2>
+      <svg viewBox="-4 -4 53 53" role="img" aria-label="Feedback QR code" shape-rendering="crispEdges">
+        <rect x="-4" y="-4" width="53" height="53" fill="#fff"/>
+        <path fill="#000" d="M0 0h7v1h-7M11 0h1v4h-1M14 0h1v1h-1M19 0h3v1h-3M25 0h7v1h-7M36 0h1v1h-1M38 0h7v1h-7M0 1h1v6h-1M6 1h1v6h-1
+M12 1h2v1h-2M17 1h1v1h-1M19 1h1v1h-1M22 1h1v2h-1M26 1h1v1h-1M28 1h4v1h-4M35 1h1v4h-1M38 1h1v6h-1M44 1h1v6h-1
+M2 2h3v3h-3M10 2h1v1h-1M13 2h4v1h-4M18 2h1v1h-1M21 2h1v1h-1M27 2h2v1h-2M30 2h1v1h-1M32 2h1v1h-1M40 2h3v3h-3
+M15 3h3v1h-3M20 3h1v10h-1M24 3h1v6h-1M36 3h1v2h-1M10 4h1v1h-1M14 4h1v3h-1M21 4h3v1h-3M25 4h3v1h-3M29 4h2v1h-2
+M32 4h3v1h-3M8 5h1v2h-1M11 5h3v1h-3M15 5h5v1h-5M26 5h4v1h-4M32 5h1v3h-1M1 6h5v1h-5M10 6h1v1h-1M12 6h1v1h-1
+M16 6h1v2h-1M18 6h1v2h-1M22 6h1v1h-1M26 6h1v3h-1M28 6h1v1h-1M30 6h1v1h-1M34 6h1v3h-1M36 6h1v1h-1M39 6h5v1h-5
+M9 7h1v6h-1M13 7h1v1h-1M15 7h1v3h-1M17 7h1v1h-1M19 7h1v1h-1M25 7h1v1h-1M27 7h1v1h-1M31 7h1v2h-1M0 8h1v2h-1
+M3 8h1v2h-1M5 8h2v1h-2M8 8h1v1h-1M10 8h1v1h-1M14 8h1v3h-1M21 8h3v1h-3M28 8h2v1h-2M37 8h1v2h-1M39 8h1v1h-1
+M1 9h1v1h-1M4 9h1v1h-1M7 9h1v2h-1M13 9h1v4h-1M17 9h1v1h-1M21 9h1v1h-1M40 9h1v1h-1M42 9h1v1h-1M44 9h1v3h-1
+M2 10h1v1h-1M6 10h1v1h-1M12 10h1v1h-1M16 10h1v2h-1M18 10h1v7h-1M24 10h2v1h-2M27 10h1v18h-1M29 10h4v1h-4M34 10h3v1h-3
+M41 10h1v2h-1M0 11h2v1h-2M3 11h3v1h-3M8 11h1v1h-1M10 11h1v4h-1M15 11h1v2h-1M17 11h1v1h-1M19 11h1v2h-1M23 11h1v1h-1
+M26 11h1v1h-1M31 11h3v2h-3M35 11h1v2h-1M38 11h1v1h-1M40 11h1v2h-1M43 11h1v1h-1M0 12h1v1h-1M3 12h2v1h-2M6 12h2v1h-2
+M12 12h1v3h-1M21 12h2v1h-2M24 12h2v3h-2M29 12h2v1h-2M34 12h1v5h-1M36 12h1v1h-1M39 12h1v1h-1M1 13h1v2h-1M5 13h1v2h-1
+M8 13h1v1h-1M11 13h1v1h-1M14 13h1v1h-1M17 13h1v2h-1M31 13h2v1h-2M37 13h1v1h-1M41 13h1v2h-1M44 13h1v1h-1M3 14h2v2h-2
+M6 14h2v1h-2M13 14h1v1h-1M15 14h1v3h-1M23 14h1v3h-1M29 14h1v1h-1M31 14h1v2h-1M35 14h2v1h-2M39 14h1v3h-1M43 14h1v1h-1
+M0 15h1v2h-1M2 15h1v4h-1M7 15h1v1h-1M16 15h1v1h-1M22 15h1v1h-1M26 15h1v9h-1M28 15h1v1h-1M30 15h1v1h-1M32 15h2v1h-2
+M35 15h1v1h-1M38 15h1v1h-1M40 15h1v1h-1M1 16h1v1h-1M5 16h2v1h-2M11 16h2v1h-2M14 16h1v1h-1M17 16h1v1h-1M19 16h2v1h-2
+M24 16h2v1h-2M29 16h1v2h-1M32 16h1v1h-1M42 16h2v1h-2M5 17h1v1h-1M8 17h2v1h-2M13 17h1v3h-1M16 17h1v1h-1M24 17h1v9h-1
+M28 17h1v1h-1M31 17h1v2h-1M35 17h1v2h-1M37 17h2v1h-2M41 17h1v2h-1M1 18h1v8h-1M6 18h1v1h-1M11 18h1v1h-1M15 18h1v2h-1
+M17 18h1v1h-1M23 18h1v3h-1M37 18h1v1h-1M40 18h1v9h-1M42 18h3v1h-3M5 19h1v2h-1M8 19h3v1h-3M14 19h1v1h-1M18 19h2v1h-2
+M22 19h1v2h-1M25 19h1v1h-1M29 19h2v1h-2M32 19h3v1h-3M36 19h1v7h-1M39 19h1v2h-1M44 19h1v1h-1M4 20h1v8h-1M6 20h3v1h-3
+M10 20h2v1h-2M16 20h1v1h-1M18 20h1v3h-1M20 20h2v1h-2M28 20h2v1h-2M31 20h1v3h-1M33 20h1v1h-1M37 20h2v1h-2M43 20h1v5h-1
+M8 21h1v4h-1M12 21h1v1h-1M19 21h2v1h-2M44 21h1v5h-1M0 22h1v1h-1M2 22h2v3h-2M6 22h1v1h-1M9 22h1v3h-1M11 22h1v1h-1
+M13 22h2v1h-2M16 22h1v1h-1M20 22h1v4h-1M22 22h1v1h-1M25 22h1v4h-1M29 22h2v1h-2M33 22h3v1h-3M38 22h1v1h-1M42 22h1v1h-1
+M12 23h1v1h-1M15 23h1v1h-1M17 23h1v1h-1M19 23h1v1h-1M28 23h2v2h-2M32 23h1v2h-1M34 23h1v1h-1M41 23h1v2h-1M5 24h3v1h-3
+M11 24h1v1h-1M13 24h2v2h-2M18 24h1v1h-1M21 24h3v1h-3M30 24h2v1h-2M33 24h1v1h-1M35 24h1v1h-1M37 24h3v1h-3M5 25h1v1h-1
+M10 25h1v1h-1M15 25h1v1h-1M19 25h1v1h-1M21 25h1v3h-1M28 25h1v1h-1M31 25h1v3h-1M34 25h1v1h-1M38 25h1v1h-1M3 26h1v2h-1
+M6 26h1v1h-1M9 26h1v2h-1M12 26h1v5h-1M16 26h2v1h-2M22 26h2v1h-2M26 26h1v1h-1M29 26h1v1h-1M32 26h1v3h-1M37 26h1v4h-1
+M39 26h1v3h-1M42 26h2v1h-2M2 27h1v2h-1M8 27h1v3h-1M11 27h1v1h-1M13 27h1v1h-1M23 27h1v3h-1M34 27h1v1h-1M38 27h1v1h-1
+M41 27h1v1h-1M43 27h2v1h-2M0 28h2v1h-2M5 28h3v1h-3M16 28h1v6h-1M18 28h3v1h-3M24 28h3v1h-3M30 28h1v1h-1M36 28h1v1h-1
+M40 28h1v1h-1M0 29h1v2h-1M4 29h1v1h-1M11 29h1v6h-1M13 29h2v2h-2M17 29h1v3h-1M19 29h1v10h-1M21 29h2v1h-2M24 29h1v3h-1
+M26 29h4v1h-4M31 29h1v2h-1M42 29h2v2h-2M3 30h1v1h-1M6 30h2v1h-2M9 30h2v2h-2M15 30h1v2h-1M18 30h1v2h-1M20 30h1v2h-1
+M22 30h1v1h-1M25 30h1v2h-1M28 30h1v8h-1M32 30h4v1h-4M38 30h1v2h-1M40 30h2v1h-2M44 30h1v2h-1M1 31h2v1h-2M4 31h2v1h-2
+M26 31h2v2h-2M30 31h1v1h-1M32 31h2v1h-2M36 31h1v1h-1M39 31h2v1h-2M0 32h1v2h-1M3 32h1v2h-1M5 32h5v1h-5M12 32h1v1h-1
+M14 32h1v1h-1M22 32h2v1h-2M33 32h1v1h-1M35 32h1v4h-1M42 32h2v1h-2M2 33h1v1h-1M4 33h2v1h-2M7 33h2v3h-2M15 33h1v4h-1
+M17 33h1v1h-1M20 33h3v1h-3M24 33h1v1h-1M27 33h1v2h-1M32 33h1v2h-1M43 33h1v1h-1M4 34h1v3h-1M6 34h1v1h-1M10 34h1v3h-1
+M18 34h1v1h-1M23 34h1v3h-1M25 34h1v3h-1M31 34h1v6h-1M36 34h1v1h-1M38 34h1v3h-1M40 34h2v1h-2M44 34h1v4h-1M1 35h3v1h-3
+M9 35h1v1h-1M12 35h1v1h-1M16 35h2v1h-2M26 35h1v2h-1M29 35h1v2h-1M33 35h1v1h-1M37 35h1v2h-1M41 35h1v1h-1M0 36h1v1h-1
+M3 36h1v1h-1M6 36h1v1h-1M8 36h1v2h-1M11 36h1v2h-1M14 36h1v2h-1M18 36h1v1h-1M20 36h3v1h-3M24 36h1v6h-1M27 36h1v2h-1
+M32 36h1v1h-1M34 36h1v2h-1M36 36h1v7h-1M39 36h2v1h-2M43 36h1v1h-1M16 37h1v3h-1M20 37h1v5h-1M33 37h1v4h-1M40 37h1v6h-1
+M0 38h7v1h-7M10 38h1v1h-1M13 38h1v1h-1M18 38h1v1h-1M22 38h1v1h-1M25 38h1v1h-1M29 38h1v1h-1M32 38h1v1h-1M38 38h1v1h-1
+M41 38h3v1h-3M0 39h1v6h-1M6 39h1v6h-1M8 39h2v1h-2M15 39h1v3h-1M17 39h1v1h-1M26 39h3v1h-3M30 39h1v2h-1M44 39h1v1h-1
+M2 40h3v3h-3M9 40h1v1h-1M11 40h1v4h-1M14 40h1v1h-1M19 40h1v1h-1M21 40h3v1h-3M27 40h1v1h-1M29 40h1v2h-1M32 40h1v1h-1
+M34 40h2v1h-2M37 40h3v1h-3M41 40h1v4h-1M8 41h1v1h-1M12 41h1v1h-1M21 41h1v2h-1M26 41h1v1h-1M28 41h1v2h-1M35 41h1v1h-1
+M37 41h1v2h-1M42 41h2v1h-2M9 42h1v2h-1M16 42h1v1h-1M19 42h1v3h-1M22 42h2v1h-2M27 42h1v1h-1M31 42h3v1h-3M38 42h1v1h-1
+M43 42h2v1h-2M12 43h1v2h-1M14 43h2v1h-2M20 43h1v1h-1M23 43h2v1h-2M26 43h1v1h-1M32 43h3v1h-3M1 44h5v1h-5M8 44h1v1h-1
+M10 44h1v1h-1M13 44h1v1h-1M15 44h1v1h-1M17 44h1v1h-1M21 44h1v1h-1M24 44h1v1h-1M27 44h2v1h-2M30 44h2v1h-2M33 44h1v1h-1
+M37 44h4v1h-4M43 44h1v1h-1"/>
+      </svg>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <button id="prev" class="navbtn" type="button">← Prev</button>
+  <button id="next" class="navbtn" type="button">Next →</button>
+  <span class="pos" id="pos"></span>
+  <span class="hint">← → to move · click any box to focus it · Esc clears · T theme</span>
+  <span class="clk" id="clk"></span>
+</footer>
+
+<script>
+/* =====================================================================
+   PHI pipeline visualiser — runs inside the deck, in the deck's document.
+   Kept in a closure so its names (go, stage, VT…) cannot reach the deck's.
+   ===================================================================== */
+(function(){
+const PVR = document.getElementById('pv');
+
+const CLAIMS = [
+  {
+    id:'C1', domain:'Digital', severity:'High',
+    headline:'Screen use ran deep into the night',
+    trace:'email_after_2200=23, late_night_screen_time=1.6, typing_error_rate=7.1, blue_light_filter_minutes=0',
+    tokens:34,
+    l1:{v:true, why:'rank 1 email_after_2200 +475.0 (High); rank 2 blue_light_filter_minutes −100.0 (High) → High. 4 adverse metrics, 3 raw. All four pairs match source exactly.'},
+    sugs:[
+      {t:'Set your phone to hand off notifications at 22:00 tonight.',v:true,
+       why:'Acts directly on email_after_2200=23.'},
+      {t:'Turn the blue-light filter on now so it is running by evening.',v:true,
+       why:'blue_light_filter_minutes=0 — nothing is enabled today.'},
+      {t:'Take melatonin an hour before bed.',v:false,
+       why:'BeyondEvidence — no supplement data in the subset.'},
+      {t:'Move tomorrow morning\u2019s standup later so you can lie in.',v:false,
+       why:'DeferredAction — the suggestion must be for today.'}
+    ]
+  },
+  {
+    id:'C2', domain:'Sleep', severity:'High',
+    headline:'Sleep was short and heavily fragmented',
+    trace:'restless_minutes=68, awakenings=6, sleep_latency=42, deep_sleep=0.5, sleep_duration=4.2',
+    tokens:38,
+    l1:{v:true, why:'rank 1 sleep_latency +740.0 (High); rank 2 deep_sleep −64.3 (High) → High. 5 adverse metrics, all raw. All five pairs match source exactly.'},
+    sugs:[
+      {t:'Block 21:30 tonight as a wind-down slot, screens down.',v:true,
+       why:'sleep_latency=42 min — the runway is the problem.'},
+      {t:'Keep the bedroom dark and cool before you turn in.',v:true,
+       why:'awakenings=6 — fragmentation, not duration alone.'},
+      {t:'Skip your afternoon coffee.',v:false,
+       why:'BeyondEvidence — no caffeine metric in this subset.'},
+      {t:'Sleep in until 09:00 tomorrow.',v:false,
+       why:'ConstraintConflict — 07:30 start is in the calendar.'}
+    ]
+  },
+  {
+    id:'C3', domain:'Activity', severity:'Medium',
+    headline:'Activity collapsed across the whole day',
+    trace:'workouts_logged=0, steps=412, distance=0.31, active_minutes=6, standing_desk_minutes=12',
+    tokens:36,
+    l1:{v:true, why:'rank 1 workouts_logged −100.0 (High); rank 2 steps −95.9 (Medium) → severity is Medium, not High. 5 adverse metrics. All five pairs match source exactly.'},
+    sugs:[
+      {t:'Walk for 20 minutes in the 13:00\u201314:00 gap.',v:true,
+       why:'Verified free window before the 14:00 Design Review.'},
+      {t:'Stand for the 15:00 stakeholder sync.',v:true,
+       why:'standing_desk_minutes=12 — trivially achievable.'},
+      {t:'Go for a 10km run this evening.',v:false,
+       why:'CouldWorsen — no window before 18:35, and load is wrong.'},
+      {t:'Eat more protein to support recovery.',v:false,
+       why:'BeyondEvidence — nutrition is not in this subset.'}
+    ]
+  }
+];
+
+const GATE = [
+  {ok:false, t:'Evening actions collide',
+   d:'C1 hands off notifications at 22:00; C2 starts wind-down at 21:30. Two separate evening rituals for one evening \u2014 merged into the 21:30 block.'},
+  {ok:false, t:'Severity ordering vs. calendar',
+   d:'C3 books the 13:00\u201314:00 gap, which is the only free window either C1 or C2 could have used. No conflict today, but flagged as the single contended slot.'},
+  {ok:true,  t:'No contradictory advice',
+   d:'6 surviving suggestions, none instructs the opposite of another.'},
+  {ok:true,  t:'No duplicate actions across claims',
+   d:'Screen-down appears once, not in both C1 and C2.'},
+  {ok:true,  t:'Total load is achievable',
+   d:'6 actions across a day that ends 18:35. Nothing scheduled after the 19:00 dinner.'}
+];
+
+/* USD per 1M tokens — AI Builder column from the Model Tiers & Cost slide. */
+const RATES = {
+  reasoning:{in:75.00, out:300.00},
+  standard :{in:10.00, out: 30.00},
+  mini     :{in: 0.50, out:  1.50}
+};
+
+const PIPE = [
+  {n:'Claim generation',          tier:'standard', calls: 1, tin:5300, tout:180},
+  {n:'Claim validation (L1)',     tier:'standard', calls: 1, tin:5000, tout:260},
+  {n:'Suggestion generation',     tier:'mini',     calls: 3, tin: 230, tout:120},
+  {n:'Suggestion validation (L2)',tier:'mini',     calls:12, tin: 240, tout: 60},
+  {n:'Quality gate',              tier:'standard', calls: 1, tin:1320, tout:140}
+];
+
+/* Reasoning output includes billed-but-hidden reasoning tokens, hence the large tout. */
+const BASE = [
+  {n:'Generate \u2014 claims + suggestions, full dataset', tier:'reasoning', calls:1, tin:5300, tout:2700},
+  {n:'Evaluate \u2014 whole output, full dataset',        tier:'reasoning', calls:1, tin:6300, tout:3400}
+];
+
+const STEPS = [
+  ['01','Claim generation'],
+  ['02','Claim validation'],
+  ['03','Suggestion loop'],
+  ['04','Suggestion validation'],
+  ['05','Quality gate'],
+  ['06','Tokens &amp; dollars']
+];
+
+let stage = -1;
+let sel = null;
+const VT = typeof document.startViewTransition === 'function';
+
+/* ---------- cost helpers ---------- */
+const fmt  = n => n.toLocaleString('en-US');
+const usd  = n => '$' + n.toFixed(4);
+const money= n => n.toLocaleString('en-US',{style:'currency',currency:'USD'});
+const cost = r => r.calls * (r.tin*RATES[r.tier].in + r.tout*RATES[r.tier].out) / 1e6;
+
+function costTable(rows){
+  let ti=0, to=0, tc=0, tcalls=0;
+  const body = rows.map(r=>{
+    const i=r.calls*r.tin, o=r.calls*r.tout, c=cost(r);
+    ti+=i; to+=o; tc+=c; tcalls+=r.calls;
+    return `<tr><td>${r.n}</td><td><span class="tchip ${r.tier}">${r.tier}</span></td>
+      <td class="num">${r.calls}</td><td class="num">${fmt(Math.round(i))}</td>
+      <td class="num">${fmt(Math.round(o))}</td><td class="num">${usd(c)}</td></tr>`;
+  }).join('');
+  const html = `<table class="tbl">
+    <thead><tr><th>Step</th><th>Tier</th><th>Calls</th><th>Input tok</th><th>Output tok</th><th>Cost</th></tr></thead>
+    <tbody>${body}</tbody>
+    <tfoot><tr><td>Total</td><td></td><td class="num">${tcalls}</td>
+      <td class="num">${fmt(Math.round(ti))}</td><td class="num">${fmt(Math.round(to))}</td><td class="num">${usd(tc)}</td></tr></tfoot>
+  </table>`;
+  return {html, ti, to, tc};
+}
+
+/* ---------- per-step token strips ---------- */
+PVR.querySelectorAll('.tkstrip').forEach(el=>{
+  const p = PIPE[+el.dataset.p];
+  el.innerHTML =
+    `<span class="tchip ${p.tier}">${p.tier}</span>` +
+    `<span>${p.calls} call${p.calls>1?'s':''}</span>` +
+    `<span>input <b>${fmt(p.calls*p.tin)}</b> tok${p.calls>1?` (${fmt(p.tin)} each)`:''}</span>` +
+    `<span>output <b>${fmt(p.calls*p.tout)}</b> tok</span>` +
+    `<span>cost <b>${usd(cost(p))}</b></span>`;
+});
+
+/* ---------- stepper ---------- */
+const stepper = document.getElementById('stepper');
+stepper.insertAdjacentHTML('afterbegin', STEPS.map((s,i)=>
+  `<div class="step" data-i="${i}"><div class="n">STEP ${s[0]}</div><div class="t">${s[1]}</div></div>`
+).join(''));
+stepper.addEventListener('click', e=>{
+  const el = e.target.closest('.step'); if(!el) return;
+  go(+el.dataset.i);
+});
+
+function moveSlider(i){
+  const a = stepper.querySelectorAll('.step')[i], s = document.getElementById('slider');
+  if(!a || !s) return;
+  s.style.left  = a.offsetLeft + 'px';
+  s.style.width = a.offsetWidth + 'px';
+  s.style.top   = (a.offsetTop + a.offsetHeight - 2) + 'px';
+}
+
+/* ---------- stage 2 list ---------- */
+document.getElementById('claimsPlain').innerHTML = CLAIMS.map((c,i)=>`
+  <div class="claim ${c.severity}" style="view-transition-name:claim${i}">
+    <div class="hl">${c.headline} <span class="pill ${c.severity}">${c.severity}</span></div>
+    <div class="meta" style="font-size:11px;color:var(--dim);font-family:var(--mono)">domain: ${c.domain}</div>
+    <div class="trace">${c.trace}</div>
+    <div class="sug ${c.l1.v?'pass':'fail'}" style="margin-top:8px">
+      <span class="v">${c.l1.v?'✔':'✘'}</span>
+      <span class="tx" style="text-decoration:none;color:var(--ink)">verdict: ${c.l1.v}<span class="why">${c.l1.why}</span></span>
+    </div>
+  </div>`).join('');
+
+/* ---------- stage 3 columns ---------- */
+document.getElementById('claimCol').innerHTML = CLAIMS.map((c,i)=>`
+  <div class="claim ${c.severity}" id="cl${i}" data-i="${i}" style="view-transition-name:claim${i}">
+    <div class="hl">${c.headline} <span class="pill ${c.severity}">${c.severity}</span></div>
+    <div class="trace" id="tr${i}">${c.trace}</div>
+  </div>`).join('');
+
+document.getElementById('genCol').innerHTML = CLAIMS.map((c,i)=>`
+  <div class="gen" id="gn${i}" data-i="${i}" style="view-transition-name:gen${i}">
+    <div class="cog" style="font-size:17px">⚙️</div>
+    <div class="nm">Suggestion<br>Generator</div>
+    <div style="margin-top:4px"><span class="tchip mini">mini</span></div>
+    <div class="tk">in: ${c.tokens} tok</div>
+  </div>`).join('');
+
+document.getElementById('sugCol').innerHTML = CLAIMS.map((c,i)=>`
+  <div class="sugstack" id="sg${i}" data-i="${i}">
+    ${c.sugs.map((s,j)=>`<div class="sugone" id="so${i}${j}" style="view-transition-name:s${i}${j}">${s.t}</div>`).join('')}
+  </div>`).join('');
+
+/* ---------- stage 4 validation fan-out ---------- */
+/* Same chain as the loop stage, carried one level in: the single suggestion box splits
+   into four, and each one picks up its own judge. The view-transition names are shared
+   with stage 3, so the rows travel into their new boxes rather than cross-fading. */
+document.getElementById('fanRows').innerHTML = CLAIMS.map((c,i)=>`
+  <div class="fanrow">
+    <div class="fanclaim ${c.severity}" id="fcl${i}" style="view-transition-name:claim${i}">
+      <div class="ix">OUTER ${i+1} / 3</div>
+      <div class="hl">${c.headline}</div>
+      <div class="trace">${c.trace}</div>
+    </div>
+    <div class="fangen" id="fgn${i}" style="view-transition-name:gen${i}">
+      <div class="cog">⚙️</div>
+      <div class="nm">Suggestion<br>Generator</div>
+      <div style="margin-top:3px"><span class="tchip mini">mini</span></div>
+    </div>
+    <div class="fansugs">${c.sugs.map((s,j)=>`
+      <div class="fansug" id="fs${i}${j}" style="view-transition-name:s${i}${j}">
+        <span class="tx">${s.t}</span><span class="why">${s.why}</span>
+      </div>`).join('')}
+    </div>
+    <div class="fanjudges">${c.sugs.map((s,j)=>`
+      <div class="fanjudge" id="fj${i}${j}">
+        <div class="nm">Judge L2</div>
+        <div><span class="tchip mini">mini</span></div>
+        <div class="tk">${PIPE[3].tin}/${PIPE[3].tout} tok</div>
+      </div>`).join('')}
+    </div>
+    <div class="fanverds">${c.sugs.map((s,j)=>`
+      <div class="fanv ${s.v?'pass':'fail'}" id="fv${i}${j}">${s.v}</div>`).join('')}
+    </div>
+  </div>`).join('');
+
+/* ---------- stage 5 quality gate ---------- */
+document.getElementById('gate').innerHTML = `
+  <div class="card">
+    <h4>What the gate receives</h4>
+    <pre>{ <span class="k">"insights"</span>: [ 3 stitched claims, 6 surviving suggestions ],
+  <span class="k">"calendar_events"</span>: [ 8 ] }
+<span class="c">// ~1,320 tokens. The 88 raw metrics are NOT sent \u2014 the gate</span>
+<span class="c">// checks the set against itself, not against the source.</span></pre>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <h4>Cross-insight checks</h4>
+    ${GATE.map(g=>`
+      <div class="sug ${g.ok?'pass':'fail'}">
+        <span class="v">${g.ok?'\u2714':'\u26a0'}</span>
+        <span class="tx" style="text-decoration:none;color:var(--ink)">${g.t}<span class="why">${g.d}</span></span>
+      </div>`).join('')}
+  </div>`;
+
+/* ---------- stage 6 cost ---------- */
+/* The sliders set one report's workload: total tokens and how it splits input/output.
+   Both architectures are scaled linearly from their measured profiles, so each keeps
+   its own per-step distribution and tier mix — only the volume and the split move. */
+const M_BIN  = BASE.reduce((a,r)=>a+r.calls*r.tin ,0);
+const M_BOUT = BASE.reduce((a,r)=>a+r.calls*r.tout,0);
+const scale  = (rows,fin,fout) => rows.map(r=>({...r, tin:r.tin*fin, tout:r.tout*fout}));
+const tokOf  = v => Math.round(Math.pow(10, 3 + v/1000*3) / 10) * 10;
+
+const sN = document.getElementById('sN'), sT = document.getElementById('sT'), sP = document.getElementById('sP');
+const costTop = document.getElementById('costTop'), costBot = document.getElementById('costBot');
+
+function renderCost(){
+  const n = +sN.value, T = tokOf(+sT.value), p = +sP.value/100;
+  const bIn = T*p, bOut = T-bIn;
+  const A = costTable(scale(BASE, bIn/M_BIN, bOut/M_BOUT));
+  const B = costTable(scale(PIPE, bIn/M_BIN, bOut/M_BOUT));
+  const saving = (1 - B.tc/A.tc) * 100;
+  const RUNS = n * 30;
+  const totA = A.ti+A.to, totB = B.ti+B.to;
+  const totDelta = (1 - totB/totA) * 100;
+  const outDelta = (1 - B.to/A.to) * 100;
+  const inDelta  = (B.ti/A.ti - 1) * 100;
+
+  document.getElementById('vN').textContent = n;
+  document.getElementById('vT').textContent = fmt(T);
+  document.getElementById('vP').textContent = `${(p*100).toFixed(1)}% / ${(100-p*100).toFixed(1)}%`;
+
+  costTop.innerHTML = `
+  <div class="card">
+    <h4>Baseline \u2014 generate then evaluate, reasoning model, full dataset both times</h4>
+    ${A.html}
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h4>PHI pipeline \u2014 tier-routed</h4>
+    ${B.html}
+  </div>`;
+
+  costBot.innerHTML = `
+  <div class="meter">
+    <div class="m">
+      <div class="lbl">Baseline cost per report</div>
+      <div class="big" style="color:var(--big-bad)" data-cv="${A.tc}" data-dp="4">${usd(A.tc)}</div>
+      <div class="lbl">${fmt(Math.round(totA))} tokens over 2 calls</div>
+      <div class="bar bad"><i data-w="100"></i></div>
+    </div>
+    <div class="m">
+      <div class="lbl">PHI pipeline cost per report</div>
+      <div class="big" style="color:var(--big-good)" data-cv="${B.tc}" data-dp="4">${usd(B.tc)}</div>
+      <div class="lbl">${fmt(Math.round(totB))} tokens over 18 calls</div>
+      <div class="bar good"><i data-w="${(B.tc/A.tc*100).toFixed(1)}"></i></div>
+    </div>
+  </div>
+  <div class="note">
+    <b>${saving.toFixed(1)}% cheaper.</b>
+    The pipeline moves ${fmt(Math.round(totB))} tokens against ${fmt(Math.round(totA))} \u2014
+    ${Math.abs(totDelta).toFixed(1)}% ${totDelta>=0?'fewer':'more'}. What changes is the <i>mix</i>
+    and the <i>tier</i>: ${inDelta.toFixed(0)}% <b>more</b> input, because 18 calls each re-send their
+    own prompt, but ${outDelta.toFixed(0)}% <b>less</b> output \u2014 and output is where the premium
+    tier hurts, at ${money(RATES.reasoning.out)} per 1M against ${money(RATES.mini.out)} on mini.
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h4>At production volume \u2014 ${n} email variant${n===1?'':'s'} a day</h4>
+    <div class="meter three" style="margin-top:10px">
+      <div class="m">
+        <div class="lbl">Baseline, per month</div>
+        <div class="big" style="color:var(--big-bad)" data-cv="${A.tc*RUNS}" data-dp="2">${money(A.tc*RUNS)}</div>
+        <div class="lbl">${fmt(RUNS)} runs \u00d7 ${usd(A.tc)}</div>
+      </div>
+      <div class="m">
+        <div class="lbl">PHI pipeline, per month</div>
+        <div class="big" style="color:var(--big-good)" data-cv="${B.tc*RUNS}" data-dp="2">${money(B.tc*RUNS)}</div>
+        <div class="lbl">${fmt(RUNS)} runs \u00d7 ${usd(B.tc)}</div>
+      </div>
+      <div class="m saved">
+        <div class="lbl">Saved every month</div>
+        <div class="big" data-cv="${(A.tc-B.tc)*RUNS}" data-dp="2">${money((A.tc-B.tc)*RUNS)}</div>
+        <div class="lbl">${money((A.tc-B.tc)*RUNS*12)} a year</div>
+      </div>
+    </div>
+  </div>`;
+  costBot.querySelectorAll('[data-w]').forEach(el=>{ el.style.width = el.dataset.w + '%'; });
+}
+[sN,sT,sP].forEach(s=>s.addEventListener('input', renderCost));
+renderCost();
+
+/* ---------- selection ---------- */
+document.getElementById('loopWrap').addEventListener('click', e=>{
+  const el = e.target.closest('[data-i]'); if(!el) return;
+  const i = +el.dataset.i;
+  sel = (sel===i) ? null : i;
+  paintLoop();
+});
+
+function paintLoop(){
+  CLAIMS.forEach((c,i)=>{
+    const on = (sel===null || sel===i);
+    ['cl','gn','sg'].forEach(p=>{
+      const n = document.getElementById(p+i); if(!n) return;
+      n.classList.toggle('dim', !on);
+      n.classList.toggle('sel', sel===i);
+    });
+  });
+  document.getElementById('payload').innerHTML = (sel===null) ? `
+    <div class="note">Click any claim to see the exact payload its generator receives.</div>` : `
+    <div class="panel" style="margin-top:14px;background:var(--panel2)">
+      <h3>Payload for iteration ${sel+1} of 3</h3>
+      <pre>{
+  <span class="k">"Claim"</span>: <span class="s">"${CLAIMS[sel].headline}"</span>,
+  <span class="k">"Traceability"</span>: <span class="s">"${CLAIMS[sel].trace}"</span>
+}
+<span class="c">// ${CLAIMS[sel].tokens} tokens. The other 83 metrics, the policy block,</span>
+<span class="c">// the calendar and the derived set are NOT sent.</span></pre>
+    </div>`;
+  drawWires(true);
+}
+
+/* ---------- svg wires ---------- */
+function drawWires(anim){
+  const svg = document.getElementById('wires');
+  const wrap = document.getElementById('loopWrap');
+  if(!svg || !wrap || stage!==2) return;
+  svg.classList.toggle('draw', !!anim);
+  const W = wrap.getBoundingClientRect();
+  svg.setAttribute('width', W.width); svg.setAttribute('height', W.height);
+  svg.setAttribute('viewBox', `0 0 ${W.width} ${W.height}`);
+  let out = '';
+  const cs = getComputedStyle(document.documentElement);
+  const w1 = cs.getPropertyValue('--wire1').trim(), w2 = cs.getPropertyValue('--wire2').trim();
+  CLAIMS.forEach((c,i)=>{
+    const tr = document.getElementById('tr'+i).getBoundingClientRect();
+    const gn = document.getElementById('gn'+i).getBoundingClientRect();
+    const on = (sel===null || sel===i);
+    const o  = on ? 1 : .12;
+    const w  = sel===i ? 2.4 : 1.4;
+    const gy = gn.top-W.top+gn.height/2;
+    out += arc(tr.right-W.left, tr.top-W.top+tr.height/2, gn.left-W.left, gy, w1, o, w);
+    c.sugs.forEach((s,j)=>{
+      const sb = document.getElementById('so'+i+j).getBoundingClientRect();
+      out += arc(gn.right-W.left, gy, sb.left-W.left, sb.top-W.top+sb.height/2, w2, o, w);
+    });
+  });
+  svg.innerHTML = out;
+}
+function arc(x1,y1,x2,y2,col,op,w){
+  const mx = (x1+x2)/2;
+  return `<path pathLength="1" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"
+    fill="none" stroke="${col}" stroke-width="${w}" opacity="${op}"/>
+    <circle cx="${x2}" cy="${y2}" r="${w+1.2}" fill="${col}" opacity="${op}"/>`;
+}
+
+/* ---------- fan-out wires ---------- */
+function drawFan(anim){
+  const svg = document.getElementById('fwires');
+  const wrap = document.getElementById('fanWrap');
+  if(!svg || !wrap || stage!==3) return;
+  svg.classList.toggle('draw', !!anim);
+  const W = wrap.getBoundingClientRect();
+  svg.setAttribute('width', W.width); svg.setAttribute('height', W.height);
+  svg.setAttribute('viewBox', `0 0 ${W.width} ${W.height}`);
+  const cs  = getComputedStyle(document.documentElement);
+  const w1  = cs.getPropertyValue('--wire1').trim(), w2 = cs.getPropertyValue('--wire2').trim();
+  const okc = cs.getPropertyValue('--ok').trim(),   badc = cs.getPropertyValue('--bad').trim();
+  const R = id => document.getElementById(id).getBoundingClientRect();
+  let out = '';
+  CLAIMS.forEach((c,i)=>{
+    const cl = R('fcl'+i), gn = R('fgn'+i);
+    const gy = gn.top-W.top+gn.height/2;
+    out += arc(cl.right-W.left, cl.top-W.top+cl.height/2, gn.left-W.left, gy, w1, 1, 1.5);
+    c.sugs.forEach((s,j)=>{
+      const sg = R('fs'+i+j), jd = R('fj'+i+j), vd = R('fv'+i+j);
+      const sy = sg.top-W.top+sg.height/2, jy = jd.top-W.top+jd.height/2, vy = vd.top-W.top+vd.height/2;
+      out += arc(gn.right-W.left, gy, sg.left-W.left, sy, w2, .8, 1.1);
+      out += arc(sg.right-W.left, sy, jd.left-W.left, jy, w1, .8, 1.1);
+      out += arc(jd.right-W.left, jy, vd.left-W.left, vy, s.v?okc:badc, .9, 1.1);
+    });
+  });
+  svg.innerHTML = out;
+}
+
+/* ---------- email ---------- */
+function renderMail(){
+  const show   = stage>=1;              // boxes appear once claims are validated
+  const filled = stage>=3;              // bullets appear once the L2 verdicts are in
+  const m = document.getElementById('mail');
+  document.getElementById('mailState').textContent =
+    stage<1 ? 'template only' : (filled ? 'complete' : 'suggestions pending');
+
+  if(!show){
+    /* the finished shape with nothing in it, so the later stages fill a template
+       rather than conjure one and you can see what each step contributes */
+    let k = 0;
+    const ghost = (label, sev, n) => `<section><h3 class="sec">${label}</h3>${
+      Array.from({length:n},()=>{ k++; return `
+        <div class="ins ${sev}">
+          <p class="h">Insight ${k}</p>
+          <p class="cat">domain pending</p>
+          <ul><li>Suggestion 1</li><li>Suggestion 2</li><li>Suggestion 3</li></ul>
+          <p class="tr">Based on: traceability pending</p>
+        </div>`; }).join('')}</section>`;
+    m.innerHTML = `
+      <div class="mh"><h2>Personal Health Insights</h2><p>2026-07-24</p></div>
+      <div class="mb">${ghost('High','High',2)}${ghost('Medium','Medium',1)}${ghost('Low','Low',1)}</div>`;
+    return;
+  }
+  const sec = (label, sev) => {
+    const list = CLAIMS.filter(c=>c.severity===sev);
+    const body = list.length ? list.map(c=>`
+      <div class="ins ${sev}">
+        <p class="h">${c.headline}</p>
+        <p class="cat">${c.domain}</p>
+        ${filled
+          ? `<ul>${c.sugs.filter(s=>s.v).map(s=>`<li>${s.t}</li>`).join('')}</ul>`
+          : `<div class="empty">suggestions pending — <b>loop not run</b></div>`}
+        <p class="tr">Based on: ${c.trace}</p>
+      </div>`).join('')
+      : `<div class="ins ${sev}"><p class="none">Nothing at this level today.</p></div>`;
+    return `<section><h3 class="sec">${label}</h3>${body}</section>`;
+  };
+  m.innerHTML = `
+    <div class="mh"><h2>Personal Health Insights</h2><p>2026-07-24</p></div>
+    <div class="mb">
+      ${sec('High','High')}${sec('Medium','Medium')}${sec('Low','Low')}
+    </div>`;
+}
+
+/* ---------- nav ---------- */
+function go(i, anim){
+  if(i===stage) return;
+  document.documentElement.classList.toggle('back', i < stage);
+  const apply = ()=>{
+    stage = i; sel = null;
+    PVR.querySelectorAll('.step').forEach((n,k)=>n.classList.toggle('active',k===i));
+    PVR.querySelectorAll('.stage').forEach(n=>{
+      n.classList.remove('pop');
+      n.classList.toggle('on', +n.dataset.s===i);
+    });
+    renderMail();
+    moveSlider(i);
+    if(i===5) zeroCounters();   // so the snapshot starts at zero and rolls up after
+  };
+  const after = ()=>{
+    const st = PVR.querySelector('.stage.on');
+    if(st) st.classList.add('pop');
+    if(i===2) paintLoop();
+    if(i===3) drawFan(true);
+    if(i===5) countUp();
+  };
+  if(VT && anim!==false){
+    const t = document.startViewTransition(apply);
+    t.ready.catch(()=>{});
+    t.finished.then(after, after);
+  } else { apply(); after(); }
+}
+
+/* the big figures roll up rather than just appearing */
+function zeroCounters(){
+  PVR.querySelectorAll('[data-cv]').forEach(el=>{
+    el.textContent = (0).toLocaleString('en-US',
+      {style:'currency',currency:'USD',minimumFractionDigits:+el.dataset.dp,maximumFractionDigits:+el.dataset.dp});
+  });
+  PVR.querySelectorAll('[data-w]').forEach(el=>{ el.style.width = '0%'; });
+}
+function countUp(){
+  PVR.querySelectorAll('[data-cv]').forEach(el=>{
+    const to = +el.dataset.cv, dp = +el.dataset.dp, t0 = performance.now(), dur = 950;
+    const tick = t=>{
+      const p = Math.min(1,(t-t0)/dur), e = 1-Math.pow(1-p,3);
+      el.textContent = (to*e).toLocaleString('en-US',
+        {style:'currency',currency:'USD',minimumFractionDigits:dp,maximumFractionDigits:dp});
+      if(p<1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  PVR.querySelectorAll('[data-w]').forEach(el=>{
+    requestAnimationFrame(()=>{ el.style.width = el.dataset.w + '%'; });
+  });
+}
+
+window.addEventListener('resize', ()=>{ drawWires(); drawFan(); moveSlider(stage); });
+
+go(0, false);
+
+/* the deck drives the stepper: arrow keys walk the six steps before leaving the slide */
+window.PV = {
+  last: STEPS.length-1,
+  next(){ if(stage < STEPS.length-1){ go(stage+1); return true; } return false; },
+  prev(){ if(stage > 0){ go(stage-1); return true; } return false; },
+  enter(dir){
+    const t = dir < 0 ? STEPS.length-1 : 0;
+    if(stage !== t) go(t, false);
+    moveSlider(stage); drawWires(true); drawFan(true);
+    if(stage===5) countUp();
+  },
+  redraw(){ moveSlider(stage); drawWires(); drawFan(); }
+};
+})();
+
+
+/* =====================================================================
+   The deck
+   ===================================================================== */
+const slides = [...document.querySelectorAll('.slide')];
+const VT = typeof document.startViewTransition === 'function';
+if(VT) document.documentElement.classList.add('vt');
+const VIZ = slides.findIndex(s=>s.querySelector('#pv'));
+
+let cur = -1;
+
+/* ---------- section chips ---------- */
+const snav = document.getElementById('snav');
+const sections = [];
+slides.forEach((s,i)=>{
+  const name = s.dataset.sec;
+  if(!sections.length || sections[sections.length-1].name !== name) sections.push({name, first:i, last:i});
+  else sections[sections.length-1].last = i;
+});
+snav.innerHTML = sections.map((s,i)=>
+  `<button class="schip" type="button" data-i="${i}">${s.name}</button>`).join('');
+snav.addEventListener('click', e=>{
+  const b = e.target.closest('.schip'); if(!b) return;
+  go(sections[+b.dataset.i].first);
+});
+
+/* ---------- navigation ---------- */
+const prev = document.getElementById('prev'), next = document.getElementById('next');
+const posEl = document.getElementById('pos');
+const bar = document.getElementById('progbar');
+
+/* ---------- run sheet ---------- */
+/* 12:05 → 12:55. Minutes per slide; the demo and the pipeline get the lion's share. */
+const clkEl = document.getElementById('clk');
+const RUN_START = 12*60 + 5;
+const RUN_MINS  = [2,3,4,2,2,3,2,2,2,4,2,3,2,7,6,1,2,1];
+const RUN_ENDS  = [];
+RUN_MINS.reduce((t,m)=>{ t += m; RUN_ENDS.push(t); return t; }, RUN_START);
+const hhmm = t => Math.floor(t/60) + ':' + String(t%60).padStart(2,'0');
+
+function go(i, anim){
+  i = Math.max(0, Math.min(slides.length-1, i));
+  if(i === cur) return;
+  const root = document.documentElement;
+  const dir = i < cur ? -1 : 1;
+  root.classList.toggle('back', dir < 0);
+  const apply = ()=>{
+    cur = i;
+    slides.forEach((s,k)=>s.classList.toggle('on', k===i));
+    snav.querySelectorAll('.schip').forEach((c,k)=>
+      c.classList.toggle('on', i>=sections[k].first && i<=sections[k].last));
+    posEl.innerHTML = `<b>${i+1}</b> / ${slides.length}`;
+    clkEl.textContent = hhmm(RUN_ENDS[i]);
+    bar.style.width = ((i+1)/slides.length*100) + '%';
+    prev.disabled = (i===0);
+    next.disabled = (i===slides.length-1);
+    window.scrollTo(0,0);
+  };
+  /* the visualiser measures itself, so it can only lay its wires out once it is on screen */
+  const after = ()=>{ root.classList.remove('dk'); if(i===VIZ) window.PV.enter(dir); armEgg(i); };
+  if(VT && anim!==false){
+    root.classList.add('dk');
+    const t = document.startViewTransition(apply);
+    t.ready.catch(()=>{});
+    t.finished.then(after, after);
+  } else { apply(); after(); }
+}
+
+/* on the pipeline slide the arrows walk its six steps first, then leave */
+function fwd(){ if(cur===VIZ && window.PV.next()) return; go(cur+1); }
+function bwd(){ if(cur===VIZ && window.PV.prev()) return; go(cur-1); }
+
+prev.addEventListener('click', bwd);
+next.addEventListener('click', fwd);
+
+document.addEventListener('keydown', e=>{
+  if(e.target.closest('input,textarea')) return;
+  switch(e.key){
+    case 'ArrowRight': case 'PageDown': fwd(); break;
+    case 'ArrowLeft':  case 'PageUp':   bwd(); break;
+    case 'Home': go(0); break;
+    case 'End':  go(slides.length-1); break;
+    case 'Escape': clearPicks(); break;
+    case 'n': case 'N': toggleNotes(); break;
+    case 't': case 'T': setTheme(!document.documentElement.classList.contains('aurora')); break;
+  }
+});
+
+/* ---------- click any box to focus it ---------- */
+/* Tagged at boot rather than in the markup, so every grid, ladder, numbered list and
+   table row on every slide is pickable without 150 hand-written class attributes. */
+const deckEl = document.getElementById('deck');
+function tagPicks(root){
+  root.querySelectorAll('.grid2,.grid3,.stages,ol.num,.tbl tbody').forEach(g=>{
+    if(g.closest('#pv,#priceTbl')) return;
+    g.classList.add('picks');
+    [...g.children].forEach(c=>c.classList.add('pick'));
+  });
+}
+slides.forEach(tagPicks);
+function clearPicks(){
+  deckEl.querySelectorAll('.picks.has').forEach(g=>g.classList.remove('has'));
+  deckEl.querySelectorAll('.pick.sel').forEach(p=>p.classList.remove('sel'));
+  deckEl.querySelectorAll('.gold.lit').forEach(g=>g.classList.remove('lit'));
+  document.getElementById('sdet').innerHTML = '';
+}
+deckEl.addEventListener('click', e=>{
+  const it = e.target.closest('.pick'); if(!it) return;
+  const grp = it.closest('.picks');
+  const on = !it.classList.contains('sel');
+  [...grp.children].forEach(c=>c.classList.remove('sel'));
+  it.classList.toggle('sel', on);
+  grp.classList.toggle('has', on);
+});
+
+/* ---------- prompt anatomy ---------- */
+const PROMPT = [
+  {nm:'System / persona', rl:'Who the model is being, and its standard of proof.',
+   body:'You are a personal health analyst. You are precise, evidence-first, and never guess.'},
+  {nm:'Task', rl:'The one job, and the exact shape of the answer.',
+   body:'From today\u2019s metrics, surface up to 3 insights that matter. For each: a headline,\na severity (High/Medium/Low), and a traceability string naming the exact metrics used.'},
+  {nm:'Context', rl:'Background the model needs to read the numbers properly.',
+   body:'The user wears a watch and phone that log sleep, activity, heart-rate and calendar data.\n\nData definitions:\n- sleep_duration  hours asleep, not hours in bed.\n- restless_minutes  minutes of movement during a sleep block.\n- sleep_latency  minutes from lights-out to first sleep. Over 30 is poor.\n- active_minutes  minutes above resting heart rate, excluding walking to the kettle.\n- steps  daily count. Under 2,000 is sedentary for this user; 8,000 is a normal day.\n\nHow to read them:\n- Lower is better for restless_minutes, latency and awakenings. Higher is better for sleep and activity.\n- A single bad number is noise. A bad number that agrees with a second one is a signal.\n- Calendar events are constraints, not suggestions \u2014 the user cannot move them.'},
+  {nm:'Rules', rl:'The constraints that keep it honest.',
+   body:'- Cite only metrics present in the data; never invent values.\n- If evidence is weak, return fewer insights. Return JSON only.\n- Every insight must name the exact metrics it was derived from.'},
+  {nm:'Examples', rl:'One worked pair — the cheapest accuracy you can buy.',
+   html:'Input:  { <span class="s">"evening_social_event"</span>: <span class="n2">1</span>,\n          <span class="s">"hours_since_shower"</span>: <span class="n2">51</span>,\n          <span class="s">"sleep_duration"</span>: <span class="n2">4.2</span> }\n\nOutput: [{ <span class="s">"headline"</span>: <span class="s">"Shower before tonight\u2019s event"</span>,\n           <span class="s">"severity"</span>: <span class="s">"High"</span>,\n           <span class="s">"traceability"</span>: <span class="s">"evening_social_event=1, hours_since_shower=51"</span> }]'},
+  {nm:'Input data', rl:'Today\u2019s metrics, injected by the flow.', body:'Data'},
+  {nm:'Output schema', rl:'The contract you parse against.',
+   html:'[{ <span class="s">"headline"</span>: string, <span class="s">"severity"</span>: <span class="s">"High|Medium|Low"</span>, <span class="s">"traceability"</span>: string }]'}
+];
+const anatList = document.getElementById('anatList');
+const anatBody = document.getElementById('anatBody');
+anatList.innerHTML = PROMPT.map((p,i)=>`
+  <div class="arow" data-i="${i}">
+    <span class="kx">${String(i+1).padStart(2,'0')}</span><span class="nm">${p.nm}</span>
+    <span class="rl">${p.rl}</span>
+  </div>`).join('');
+function showAnat(i){
+  const p = PROMPT[i];
+  anatList.querySelectorAll('.arow').forEach((r,k)=>r.classList.toggle('sel', k===i));
+  anatBody.innerHTML =
+    `<p class="ttl">${p.nm}</p><p class="cap">${p.rl}</p><pre>${p.html || p.body}</pre>`;
+}
+anatList.addEventListener('click', e=>{
+  const r = e.target.closest('.arow'); if(!r) return;
+  anatList.classList.add('has');
+  showAnat(+r.dataset.i);
+});
+showAnat(0);
+
+/* ---------- the empty shell ---------- */
+const SHELL = [
+  {lb:'System / Persona', v:'{{SystemPrompt}}', src:'SharePoint file <code>system_prompt.txt</code>',
+   sk:'"You are a personal health analyst. &lt;persona + goal&gt;"'},
+  {lb:'Context', v:'{{Context}}', src:'SharePoint file <code>context.txt</code>'},
+  {lb:'Task', v:'{{Task}}', src:'SharePoint file <code>task.txt</code>'},
+  {lb:'Rules', v:'{{Rules}}', src:'SharePoint list <code>PHI_Rules</code> — one row per rule',
+   sk:'"1. &lt;rule&gt;   2. &lt;rule&gt;   3. &lt;rule&gt;"'},
+  {lb:'Examples', v:'{{Examples}}', src:'File <code>examples.txt</code>',
+   sk:'[{ <span class="s">"input"</span>: <span class="s">"&lt;sample metrics&gt;"</span>, <span class="s">"output"</span>: <span class="s">"&lt;ideal JSON&gt;"</span> }]'},
+  {lb:'Input Data', v:'{{Data}}', src:'The flow — today\u2019s raw metrics JSON',
+   sk:'<span class="k">{{Data}}</span>   <span class="c">(injected by the flow)</span>'},
+  {lb:'Derived Metrics', v:'{{DerivedMetrics}}', src:'The flow — the Compose output',
+   sk:'<span class="k">{{DerivedMetrics}}</span>   <span class="c">(the Compose output)</span>'},
+  {lb:'Output Schema', v:'{{OutputSchema}}', src:'Dataverse schema registry',
+   sk:'[{ <span class="s">"headline"</span>: <span class="s">"..."</span>, <span class="s">"severity"</span>: <span class="s">"..."</span>, <span class="s">"traceability"</span>: <span class="s">"..."</span> }]'}
+];
+const shellEl = document.getElementById('shell');
+const shellBody = document.getElementById('shellBody');
+shellEl.innerHTML = SHELL.map((s,i)=>`
+  <div class="slot" data-i="${i}"><span class="lb">${s.lb}:</span><span class="vr">${s.v}</span></div>`).join('');
+function showSlot(i){
+  const s = SHELL[i];
+  shellEl.querySelectorAll('.slot').forEach((r,k)=>r.classList.toggle('sel', k===i));
+  shellBody.innerHTML =
+    `<h4>${s.lb} <span style="font-family:var(--mono);color:var(--accent)">${s.v}</span></h4>
+     <div class="srcline">pulled from: ${s.src}</div>` +
+    (s.sk ? `<pre>${s.sk}</pre>` : '');
+}
+shellEl.addEventListener('click', e=>{
+  const r = e.target.closest('.slot'); if(!r) return;
+  shellEl.classList.add('has');
+  showSlot(+r.dataset.i);
+});
+showSlot(0);
+
+/* ---------- pricing heat matrix ---------- */
+/* Only Azure OpenAI is open at the start; the platform columns stay smudged until
+   clicked, so the room guesses the markup before it sees it. */
+const PLAT = [
+  {g:'ao', t:'Azure OpenAI', open:true},
+  {g:'cs', t:'Copilot Studio', open:false},
+  {g:'ab', t:'AI Builder', open:false}
+];
+const MODELS = [
+  {m:'GPT‑4.1 mini',     tier:'basic',     lbl:'Basic',
+   ao:[0.40,1.60], cs:[1,1],     ab:[0.50,1.50]},
+  {m:'GPT‑5 chat',       tier:'standard',  lbl:'Standard',
+   ao:[1.25,10],   cs:[15,15],   ab:[10,30]},
+  {m:'GPT‑5 reasoning',  tier:'reasoning', lbl:'Premium',
+   ao:[1.25,10],   cs:[100,100], ab:[[70,80],[280,320]]}
+];
+const priceTbl = document.getElementById('priceTbl');
+const dollars = v => '$' + (v % 1 ? v.toFixed(2) : v);
+const cell = v => Array.isArray(v) ? dollars(v[0]) + '–' + v[1] : dollars(v);
+/* a range is banded on its top end — the worst case is what the bill feels like */
+const heat  = v => { const n = Array.isArray(v) ? v[1] : v;
+  return n < 1 ? 'h1' : n < 5 ? 'h2' : n < 20 ? 'h3' : n < 100 ? 'h4' : n < 200 ? 'h5' : 'h6'; };
+
+function renderPrice(){
+  priceTbl.innerHTML = `<table class="tbl heat">
+    <thead>
+      <tr>
+        <th rowspan="2" style="width:24%">Model / tier</th>
+        ${PLAT.map(p=>`<th colspan="2" class="gh${p.open?'':' shut'}" data-g="${p.g}">${p.t}
+          <span class="rv">${p.open ? 'click to hide' : '🔒 click to reveal'}</span></th>`).join('')}
+      </tr>
+      <tr>${PLAT.map(()=>'<th class="num">in</th><th class="num">out</th>').join('')}</tr>
+    </thead>
+    <tbody>
+      ${MODELS.map(r=>`<tr>
+        <td>${r.m}<br><span class="tchip ${r.tier}">${r.lbl}</span></td>
+        ${PLAT.map(p=>r[p.g].map(v=> p.open
+          ? `<td class="mny ${heat(v)}" data-g="${p.g}">${cell(v)}</td>`
+          : `<td class="mny lk" data-g="${p.g}">•••</td>`).join('')).join('')}
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+priceTbl.addEventListener('click', e=>{
+  const h = e.target.closest('.gh');
+  const c = h || e.target.closest('td.lk');
+  if(!c) return;
+  const p = PLAT.find(x=>x.g === c.dataset.g);
+  p.open = !p.open;
+  renderPrice();
+  if(p.g === 'ab') armMsft();
+});
+renderPrice();
+
+/* ---------- stage 01 opens the derived-metrics detail ---------- */
+const SDET = {
+  derived:`
+    <div class="panel tn3">
+      <h3>Stage 01 — Derived metrics (no LLM, deterministic)</h3>
+      <p style="margin:0 0 4px">The point of this stage is <b>to take work away from the model.</b>
+      Anything that is a calculation, a threshold or an if/then rule does not belong in a prompt —
+      it belongs in the flow, where it is free, exact, and identical every single run.</p>
+      <p style="margin:0">Raw signals are weak on their own. Combine them <b>once</b> into composite
+      indices and the model stops having to spot the pattern — it just reads the answer and reasons
+      about what to do with it. Less to hold in its head, fewer places to go wrong.</p>
+    </div>
+
+    <div class="grid3">
+      <div class="card tn1">
+        <h4>🧮 Do the maths in the flow</h4>
+        <p style="margin:0">An LLM can get arithmetic wrong, and it is far more expensive to make it
+        try. Calculate once, cite everywhere.</p>
+      </div>
+      <div class="card tn2">
+        <h4>🧠 Cut the cognitive load</h4>
+        <p style="margin:0">Every rule you move out of the prompt is one less thing competing for the
+        model's attention — which is why accuracy went <i>up</i> when we took work away.</p>
+      </div>
+      <div class="card tn4">
+        <h4>🔁 Make patterns repeatable</h4>
+        <p style="margin:0">An observed pattern turned into a formula gives the same number today and
+        tomorrow. No drift, no cost, no re-litigating it with the model.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <h3>PHI derived metrics</h3>
+      <table class="tbl">
+        <thead><tr><th>Derived metric</th><th>Formula (concept)</th><th>Why it beats the raw signal</th></tr></thead>
+        <tbody>
+          <tr><td><b>Caffeine Spike Index</b> <span style="color:var(--dim)">(0–1)</span></td>
+              <td>HR <b>+</b> blood-pressure spikes while physical activity is low</td>
+              <td>The watch never sees a coffee cup — but a repeatable HR/BP spike at 9am with no exercise scores a caffeine index. Low index ≈ little/no caffeine.</td></tr>
+          <tr><td><b>Afternoon Crash Risk</b></td>
+              <td>low sleep <b>+</b> low caffeine-spike index <b>+</b> post-lunch meeting</td>
+              <td>4 hrs sleep alone = manageable. 4 hrs <b>+</b> low caffeine index <b>+</b> a 2pm meeting = <i>guaranteed</i> face-plant at 2:30.</td></tr>
+          <tr><td><b>Hygiene Readiness</b></td>
+              <td>days since shower <b>+</b> proximity of a social/date event</td>
+              <td>Skipping a shower is fine — <i>until</i> the calendar says "date, 7pm." Context flips severity.</td></tr>
+          <tr><td><b>Recovery Deficit</b></td>
+              <td>3-day sleep debt <b>+</b> resting-HR elevation <b>+</b> training load</td>
+              <td>One bad night ≠ burnout. Three bad nights <b>+</b> elevated resting HR <b>+</b> hard workouts = stop.</td></tr>
+          <tr><td><b>Social Battery</b></td>
+              <td>back-to-back meetings <b>+</b> screen time <b>–</b> alone time / steps</td>
+              <td>Predicts the 4pm "if one more person Teams-messages me…" moment.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      Derived metrics turn <i>thousands of weak signals</i> into <i>a handful of strong ones</i>.
+      Cheap, repeatable, and they anchor every downstream claim.
+    </div>`
+};
+const sdet = document.getElementById('sdet');
+/* runs after the generic .pick handler above, so .sel is already settled */
+deckEl.addEventListener('click', e=>{
+  const row = e.target.closest('.stagerow');
+  if(!row || !row.closest('.stages')) return;
+  const key = row.dataset.d;
+  sdet.innerHTML = (key && row.classList.contains('sel')) ? SDET[key] : '';
+  tagPicks(sdet);
+});
+
+/* the gold only comes on once a rule is open */
+deckEl.addEventListener('click', e=>{
+  const g = e.target.closest('.gold'); if(!g) return;
+  g.classList.toggle('lit', !!g.querySelector('.grule.sel'));
+});
+
+/* ---------- presenter notes (keyboard only) ---------- */
+function toggleNotes(){
+  const on = !document.documentElement.classList.contains('notes');
+  document.documentElement.classList.toggle('notes', on);
+  try{ localStorage.setItem('deckNotes', on ? '1' : '0'); }catch(e){}
+}
+
+/* ---------- easter eggs ---------- */
+/* Hand-drawn SVG cameos in a fixed, click-through layer outside #deck. Each is armed
+   when you land on its slide and only fires after a long random dwell — the reward is
+   for lingering, so they never step on a point you are actually making. */
+const eggLayer = document.getElementById('eggs');
+const NOMO = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const PRICE = slides.findIndex(s=>s.contains(priceTbl));
+let eggWait = null, eggLife = null, msWait = null, msLife = null;
+
+const EGGS = {
+  /* 1 — title: a cat walks the bottom edge, legs stepping in a diagonal gait */
+  0:{life:5000, cls:'e-cat', art:`
+    <svg viewBox="0 0 150 90" width="150" height="90">
+      <g class="bod">
+        <g class="tail"><path d="M26 46C8 44 2 22 16 12" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></g>
+        <path class="lg l2" d="M58 58V86" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+        <path class="lg l3" d="M86 58V86" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+        <rect x="22" y="34" width="86" height="30" rx="15" fill="currentColor"/>
+        <path class="lg l1" d="M44 58V86" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+        <path class="lg l4" d="M98 58V86" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+        <g class="head">
+          <path d="M100 30 100 12 114 24Z" fill="currentColor"/>
+          <path d="M120 22 130 10 132 26Z" fill="currentColor"/>
+          <circle cx="114" cy="38" r="17" fill="currentColor"/>
+          <ellipse class="eye" cx="116" cy="34" rx="2.6" ry="3.4" fill="#10151f"/>
+          <circle cx="128" cy="42" r="2.4" fill="#10151f" opacity=".8"/>
+          <path d="M130 40 146 35M130 45 147 48" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".7"/>
+        </g>
+      </g>
+    </svg>`},
+
+  /* 6 — a saucer drops from the top right, beams, an alien peeks, then it bolts */
+  5:{life:2000, cls:'e-ufo', art:`
+    <svg viewBox="0 0 180 140" width="180" height="140">
+      <defs><linearGradient id="egBeam" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#8fe3ff" stop-opacity=".6"/>
+        <stop offset="1" stop-color="#8fe3ff" stop-opacity="0"/></linearGradient></defs>
+      <path class="beam" d="M60 68H120L150 138H30Z" fill="url(#egBeam)"/>
+      <g class="sau">
+        <g class="al">
+          <ellipse cx="90" cy="46" rx="9" ry="11" fill="#7fe08e"/>
+          <ellipse cx="86" cy="45" rx="2.4" ry="3.6" fill="#0b1220" transform="rotate(-20 86 45)"/>
+          <ellipse cx="94" cy="45" rx="2.4" ry="3.6" fill="#0b1220" transform="rotate(20 94 45)"/>
+        </g>
+        <ellipse cx="90" cy="46" rx="28" ry="22" fill="rgba(150,220,255,.22)" stroke="currentColor" stroke-width="2"/>
+        <ellipse cx="90" cy="64" rx="56" ry="14" fill="currentColor"/>
+        <ellipse cx="90" cy="70" rx="40" ry="8" fill="currentColor" opacity=".55"/>
+        <circle class="lt k1" cx="50" cy="68" r="3.6" fill="#ffd45e"/>
+        <circle class="lt k2" cx="70" cy="71" r="3.6" fill="#ffd45e"/>
+        <circle class="lt k3" cx="90" cy="72" r="3.6" fill="#ffd45e"/>
+        <circle class="lt k4" cx="110" cy="71" r="3.6" fill="#ffd45e"/>
+        <circle class="lt k5" cx="130" cy="68" r="3.6" fill="#ffd45e"/>
+      </g>
+    </svg>`},
+
+  /* 9 — a robot pops up over the bottom-right edge, checks both ways, ducks back */
+  8:{life:2000, cls:'e-rob', art:`
+    <svg viewBox="0 0 120 140" width="120" height="140">
+      <rect x="30" y="94" width="60" height="44" rx="12" fill="currentColor" opacity=".85"/>
+      <g class="hd">
+        <path d="M60 30V14" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <circle class="ant" cx="60" cy="9" r="6" fill="#ff6b6b"/>
+        <rect x="10" y="48" width="12" height="20" rx="5" fill="currentColor" opacity=".7"/>
+        <rect x="98" y="48" width="12" height="20" rx="5" fill="currentColor" opacity=".7"/>
+        <rect x="20" y="30" width="80" height="62" rx="18" fill="currentColor"/>
+        <rect x="30" y="46" width="60" height="26" rx="13" fill="#0d1524"/>
+        <circle class="pu" cx="48" cy="59" r="5.5" fill="#7fd7ff"/>
+        <circle class="pu" cx="72" cy="59" r="5.5" fill="#7fd7ff"/>
+      </g>
+    </svg>`},
+
+  /* 12 — architecture evolution, taken literally: caterpillar in, butterfly out */
+  11:{life:3500, cls:'e-evo', art:`
+    <svg viewBox="0 0 100 62" width="120" height="74">
+      <defs><linearGradient id="egWing" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#8fc3ff"/><stop offset="1" stop-color="#b3a1ff"/></linearGradient></defs>
+      <g class="cpl">
+        <circle class="sg s6" cx="14" cy="44" r="7"/>
+        <circle class="sg s5" cx="25" cy="44" r="7.4"/>
+        <circle class="sg s4" cx="36" cy="44" r="7.8"/>
+        <circle class="sg s3" cx="47" cy="44" r="8"/>
+        <circle class="sg s2" cx="58" cy="44" r="8"/>
+        <circle class="sg s1" cx="70" cy="43" r="9"/>
+        <path d="M67 35 63 26M74 35 78 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="73" cy="41" r="1.7" fill="#10151f"/>
+      </g>
+      <g class="bfl">
+        <path class="wg" d="M45 26C26 4 6 13 13 30 18 43 36 40 45 34Z" fill="url(#egWing)" opacity=".92"/>
+        <path class="wg" d="M45 26C64 4 84 13 77 30 72 43 54 40 45 34Z" fill="url(#egWing)" opacity=".92"/>
+        <ellipse cx="45" cy="30" rx="3" ry="12" fill="#2b2f45"/>
+        <path d="M44 19 39 9M46 19 51 9" fill="none" stroke="#2b2f45" stroke-width="1.6" stroke-linecap="round"/>
+      </g>
+    </svg>`},
+
+  /* 14 — the ghost of demos past drifts up from the bottom with a word of comfort */
+  13:{life:2000, cls:'e-gho', art:`
+    <svg viewBox="0 0 100 100" width="100" height="100">
+      <g class="gh2">
+        <circle class="hm h1x" cx="30" cy="84" r="10" fill="currentColor"/>
+        <circle class="hm h2x" cx="50" cy="87" r="10" fill="currentColor"/>
+        <circle class="hm h3x" cx="70" cy="84" r="10" fill="currentColor"/>
+        <path d="M22 86V46a28 28 0 0 1 56 0v40Z" fill="currentColor"/>
+        <ellipse cx="40" cy="44" rx="4.6" ry="6.2" fill="#0d1524"/>
+        <ellipse cx="62" cy="44" rx="4.6" ry="6.2" fill="#0d1524"/>
+        <ellipse cx="51" cy="61" rx="5" ry="7" fill="#0d1524" opacity=".75"/>
+      </g>
+      <g class="bub">
+        <rect x="66" y="0" width="88" height="26" rx="13"/>
+        <path d="M76 25 68 36 86 26Z"/>
+        <text x="110" y="17" text-anchor="middle">no pressure</text>
+      </g>
+    </svg>`}
+};
+
+const MSFT_ART = `
+  <svg class="logo" viewBox="0 0 100 100" width="70" height="70">
+    <rect x="2" y="2" width="45" height="45" fill="#f25022"/>
+    <rect x="53" y="2" width="45" height="45" fill="#7fba00"/>
+    <rect x="2" y="53" width="45" height="45" fill="#00a4ef"/>
+    <rect x="53" y="53" width="45" height="45" fill="#ffb900"/>
+  </svg>
+  <span class="tick"><i></i>+\u221E%</span>
+  <svg class="chart" viewBox="0 0 200 92" width="200" height="92">
+    <path d="M6 84 34 68 58 74 84 50 108 58 134 28 160 36 194 6"/>
+  </svg>`;
+
+/* randomised each time so the stream never reads as a loop */
+function msBits(){
+  let s = '';
+  for(let k = 0; k < 18; k++){
+    const ar = k % 2 === 1;
+    s += `<i class="p${ar ? ' ar' : ''}" style="--x:${(3 + Math.random()*86).toFixed(1)}%;`
+       + `--d:${(Math.random()*3.4).toFixed(2)}s;--t:${(2 + Math.random()*1.7).toFixed(2)}s;`
+       + `--z:${(.7 + Math.random()*.7).toFixed(2)}">${ar ? '' : '$'}</i>`;
+  }
+  return s;
+}
+
+function clearEggs(){
+  [eggWait, eggLife, msWait, msLife].forEach(clearTimeout);
+  eggWait = eggLife = msWait = msLife = null;
+  eggLayer.textContent = '';
+}
+
+function fireEgg(i){
+  const e = EGGS[i];
+  eggLayer.insertAdjacentHTML('beforeend', `<div class="egg ${e.cls}">${e.art}</div>`);
+  eggLife = setTimeout(()=>{
+    const n = eggLayer.querySelector('.' + e.cls);
+    if(n) n.remove();
+  }, e.life + 150);
+}
+
+/* the punchline of the pricing table: reveal what AI Builder costs, then see who wins */
+function armMsft(){
+  clearTimeout(msWait); clearTimeout(msLife); msWait = msLife = null;
+  const ab = PLAT.find(p=>p.g === 'ab');
+  if(NOMO || !ab.open) return;
+  msWait = setTimeout(()=>{
+    if(cur !== PRICE || !ab.open) return;
+    const d = document.createElement('div');
+    d.className = 'egg e-msft';
+    d.style.top = (document.querySelector('header').getBoundingClientRect().height + 16) + 'px';
+    d.innerHTML = MSFT_ART + msBits();
+    eggLayer.appendChild(d);
+    msLife = setTimeout(()=>d.remove(), 10050);
+  }, 10000);
+}
+
+function armEgg(i){
+  clearEggs();
+  if(NOMO) return;
+  if(i === PRICE) armMsft();
+  if(EGGS[i]) eggWait = setTimeout(()=>fireEgg(i), 45000 + Math.random()*45000);
+}
+
+/* ---------- theme ---------- */
+const themeBtn = document.getElementById('themeBtn');
+function setTheme(aurora){
+  document.documentElement.classList.toggle('aurora', aurora);
+  themeBtn.setAttribute('aria-pressed', String(aurora));
+  themeBtn.querySelector('.lbl').textContent = aurora ? 'Midnight' : 'Aurora';
+  themeBtn.querySelector('.ico').textContent = aurora ? '\u25d1' : '\u25d0';
+  try{ localStorage.setItem('phiTheme', aurora ? 'aurora' : 'midnight'); }catch(e){}
+  window.PV.redraw();
+}
+themeBtn.addEventListener('click', ()=>{
+  const nextTheme = !document.documentElement.classList.contains('aurora');
+  if(VT){
+    const t = document.startViewTransition(()=>setTheme(nextTheme));
+    t.ready.catch(()=>{});
+  } else setTheme(nextTheme);
+});
+
+go(0, false);
+try{
+  if(localStorage.getItem('phiTheme')==='aurora') setTheme(true);
+  if(localStorage.getItem('deckNotes')==='1') toggleNotes();
+}catch(e){}
+</script>
+</body>
+</html>
